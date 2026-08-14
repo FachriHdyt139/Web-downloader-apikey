@@ -52,53 +52,80 @@ app.get('/api/download/youtube', async (req, res) => {
     }
 });
 
-// --- ROUTE 2: TIKTOK VIDEO (SISTEM HYBRID ANTI-GAGAL) ---
+// --- FUNGSI BANTUAN: Resolve Link Pendek TikTok ke Link Panjang ---
+async function resolveTikTokUrl(shortUrl) {
+    try {
+        if (shortUrl.includes('vt.tiktok.com') || shortUrl.includes('vm.tiktok.com')) {
+            const response = await axios.get(shortUrl, { maxRedirects: 0, validateStatus: () => true, timeout: 5000 });
+            if (response.headers.location) {
+                return response.headers.location;
+            }
+        }
+        return shortUrl;
+    } catch (e) {
+        return shortUrl;
+    }
+}
+
+// --- ROUTE 2: TIKTOK VIDEO (SISTEM HYBRID STREAMING ANTI-GAGAL) ---
 app.get('/api/download/tiktok', async (req, res) => {
     let videoUrl = req.query.url;
     if (!videoUrl) return res.status(400).json({ error: "Link TikTok kosong!" });
 
     // ==========================================
-    // METODE 1: PAKSA API RAPIDAPI (Sesuai Manual Resmi + Agresif)
+    // METODE 1: PAKSA API RAPIDAPI + STREAMING LANGSUNG (Sesuai Manual Resmi)
     // ==========================================
     try {
         console.log("[Metode 1] Mencoba API RapidAPI Resmi...");
+        
+        // 1. Resolve link pendek dulu biar nggak kena Error 400
+        const longUrl = await resolveTikTokUrl(videoUrl);
+        console.log(`[Metode 1] Link diubah ke: ${longUrl}`);
+
         const options = {
             method: 'GET',
             url: `https://${TT_HOST}/media`,
-            params: { videoUrl: videoUrl },
+            params: { videoUrl: longUrl }, // Pakai link panjang!
             headers: { 
                 'x-rapidapi-key': RAPIDAPI_KEY, 
                 'x-rapidapi-host': TT_HOST 
             },
-            timeout: 8000 // Timeout cepat biar kalau gagal langsung fallback
+            timeout: 10000
         };
 
         const response = await axios.request(options);
         const data = response.data;
         
-        // Sesuai docs, respons utamanya di 'downloadUrl'
         let directLink = data.downloadUrl || data.download_url;
         let title = data.title || "TikTok Video";
         let thumb = data.thumbnail || data.cover || "";
 
         if (directLink && directLink.startsWith('http')) {
-            console.log("[Metode 1] BERHASIL! Link didapat, memvalidasi session...");
+            console.log("[Metode 1] BERHASIL! Link didapat. Melakukan streaming langsung agar tidak hangus...");
             
-            // KUNCI RAHASIA: Karena link ini session-based (hangus dalam 1 detik),
-            // Kita lakukan HEAD request super cepat untuk memastikan link masih hidup
-            // sebelum memberikannya ke frontend.
-            try {
-                await axios.head(directLink, { timeout: 3000 });
-                console.log("[Metode 1] Link valid dan siap dikirim!");
-                return res.json({ success: true, title, link: directLink, thumb });
-            } catch (headErr) {
-                console.warn("[Metode 1] Link hangus/too slow. Jatuh ke Metode 2.");
-            }
+            // KUNCI RAHASIA: Stream langsung dari server Render ke Browser User
+            // Ini mengatasi masalah "session-based URL" yang cuma berlaku 1 detik
+            const videoStream = await axios({
+                method: 'GET',
+                url: directLink,
+                responseType: 'stream',
+                timeout: 15000
+            });
+
+            res.setHeader('Content-Type', 'video/mp4');
+            res.setHeader('Content-Disposition', `attachment; filename="fachri-dev-tiktok.mp4"`);
+            videoStream.data.pipe(res);
+            console.log("[Metode 1] Streaming selesai!");
+            return; // Selesai, jangan lanjut ke metode 2
+            
         } else {
             throw new Error("Respons API tidak mengandung downloadUrl.");
         }
     } catch (err1) {
         console.warn(`[Metode 1] Gagal: ${err1.message}. Melanjutkan ke Metode 2...`);
+        // Reset header kalau sempat ke-set
+        res.removeHeader('Content-Type');
+        res.removeHeader('Content-Disposition');
     }
 
     // ==========================================
@@ -107,29 +134,20 @@ app.get('/api/download/tiktok', async (req, res) => {
     try {
         console.log("[Metode 2] Mencoba Bypass Scraping HTML...");
         
-        // 1. Resolve link pendek dulu
-        if (videoUrl.includes('vt.tiktok.com') || videoUrl.includes('vm.tiktok.com')) {
-            const redirectRes = await axios.get(videoUrl, { maxRedirects: 0, validateStatus: () => true, timeout: 5000 });
-            if (redirectRes.headers.location) videoUrl = redirectRes.headers.location;
-        }
+        const longUrl = await resolveTikTokUrl(videoUrl);
 
-        // 2. Tembak dengan User-Agent Chrome 125 terbaru (Anti-Bot Detection)
-        const response = await axios.get(videoUrl, {
+        const response = await axios.get(longUrl, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
                 'Accept-Language': 'en-US,en;q=0.9',
                 'Referer': 'https://www.tiktok.com/'
             },
-            timeout: 8000
+            timeout: 10000
         });
 
         const html = response.data;
-
-        // 3. Regex tingkat dewa untuk mencari URL video di dalam JSON tersembunyi TikTok
-        // TikTok menyimpan data di window.__UNIVERSAL_DATA_FOR_REHYDRATION__ atau script serupa
         let cleanUrl = null;
         
-        // Pola pencarian berlapis
         const patterns = [
             /"playAddr":"(.*?)"/,
             /"downloadAddr":"(.*?)"/,
@@ -149,7 +167,7 @@ app.get('/api/download/tiktok', async (req, res) => {
         const thumbMatch = html.match(/"cover":"(.*?)"/) || html.match(/"originCover":"(.*?)"/);
 
         if (cleanUrl) {
-            console.log("[Metode 2] BERHASIL mengekstrak via HTML!");
+            console.log("[Metode 2] BERHASIL mengekstrak via HTML! Mengembalikan JSON...");
             return res.json({
                 success: true,
                 title: titleMatch ? titleMatch[1].replace(/\\/g, '').substring(0, 100) : "TikTok Video",
@@ -163,7 +181,7 @@ app.get('/api/download/tiktok', async (req, res) => {
     } catch (err2) {
         console.error("[Metode 2] Gagal Total:", err2.message);
         res.status(500).json({ 
-            error: "Sistem Hybrid Gagal. Kemungkinan: 1. Quota RapidAPI habis, 2. Video di-private/dihapus, 3. TikTok memperketat blokir IP server Render saat ini. Coba lagi nanti." 
+            error: "Sistem Hybrid Gagal. Kemungkinan: 1. Quota RapidAPI habis, 2. Video di-private/dihapus, 3. TikTok memblokir IP server Render saat ini. Coba lagi nanti." 
         });
     }
 });
