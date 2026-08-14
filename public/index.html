@@ -7,18 +7,19 @@
     <style>
         :root {
             --bg-color: #0f0c29;
-            --card-bg: rgba(30, 30, 50, 0.7);
+            --card-bg: rgba(30, 30, 50, 0.6);
             --primary: #ff4b2b;
             --secondary: #ff416c;
             --text: #ffffff;
             --text-muted: #a0a0a0;
-            --accent-glow: 0 0 15px rgba(255, 75, 43, 0.5);
+            --accent-glow: 0 0 20px rgba(255, 75, 43, 0.4);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
 
         body {
-            background: linear-gradient(to right, #24243e, #302b63, #0f0c29);
+            background: radial-gradient(circle at top left, #302b63, #0f0c29);
             color: var(--text);
             min-height: 100vh;
             display: flex;
@@ -26,140 +27,85 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            overflow-x: hidden;
         }
 
         .container {
             background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 40px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 40px 30px;
             width: 100%;
-            max-width: 500px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.1);
+            max-width: 480px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: var(--glass-border);
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Efek cahaya latar belakang container */
+        .container::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,65,108,0.1) 0%, transparent 60%);
+            z-index: -1; pointer-events: none;
         }
 
         .profile-pic {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 24px;
-            border: 3px solid var(--secondary);
-            box-shadow: var(--accent-glow);
+            width: 80px; height: 80px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 24px; border: 3px solid rgba(255,255,255,0.2);
+            box-shadow: var(--accent-glow); animation: pulse 3s infinite;
         }
 
-        h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
-            background: -webkit-linear-gradient(var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        @keyframes pulse { 0% { box-shadow: 0 0 15px rgba(255,75,43,0.4); } 50% { box-shadow: 0 0 30px rgba(255,65,108,0.7); } 100% { box-shadow: 0 0 15px rgba(255,75,43,0.4); } }
 
-        .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
-        .stats { font-size: 12px; color: var(--primary); margin-bottom: 30px; }
+        h1 { font-size: 22px; margin-bottom: 5px; background: linear-gradient(to right, #fff, #ffb3b3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 1.5px; }
+        .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 20px; }
+        .stats { font-size: 12px; color: var(--secondary); margin-bottom: 30px; font-weight: 600; }
 
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.05);
-            color: var(--text-muted);
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-
-        .tab-btn.active {
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            color: white;
-            box-shadow: var(--accent-glow);
-        }
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 12px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.3s ease; }
+        .tab-btn.active { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; box-shadow: 0 4px 15px rgba(255,75,43,0.3); transform: translateY(-1px); }
 
         .input-group { margin-bottom: 20px; text-align: left; }
-        label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+        label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; margin-left: 5px; }
         
-        .input-wrapper { position: relative; }
-        input[type="text"] {
-            width: 100%;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(0,0,0,0.3);
-            color: white;
-            outline: none;
-            font-size: 14px;
-        }
-        input[type="text"]:focus { border-color: var(--secondary); }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        input[type="text"] { width: 100%; padding: 16px 50px 16px 16px; border-radius: 12px; border: var(--glass-border); background: rgba(0,0,0,0.4); color: white; outline: none; font-size: 14px; transition: 0.3s; }
+        input[type="text"]:focus { border-color: var(--secondary); box-shadow: 0 0 10px rgba(255,65,108,0.2); }
 
-        .btn-download {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: var(--accent-glow);
-            transition: transform 0.2s;
-        }
-        .btn-download:active { transform: scale(0.98); }
-        .btn-download:disabled { opacity: 0.7; cursor: not-allowed; }
+        .btn-paste { position: absolute; right: 8px; background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        .btn-paste:hover { background: rgba(255,255,255,0.2); }
+        .btn-paste:active { transform: scale(0.95); }
 
-        .result-area {
-            margin-top: 25px;
-            padding: 15px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 10px;
-            display: none; /* Sembunyi dulu */
-            text-align: left;
-        }
+        .btn-download { width: 100%; padding: 16px; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: var(--accent-glow); transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; }
+        .btn-download:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,75,43,0.5); }
+        .btn-download:active { transform: scale(0.97); }
+        .btn-download:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+        /* --- PROGRESS BAR 2026 STYLE --- */
+        .progress-container { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-top: 15px; overflow: hidden; display: none; position: relative; }
+        .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary), #ff8a00); border-radius: 10px; transition: width 0.4s ease; position: relative; }
+        /* Efek Shimmer/Glow bergerak */
+        .progress-bar::after { content: ''; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transform: translateX(-100%); animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        .progress-text { font-size: 11px; color: var(--secondary); margin-top: 8px; display: none; font-weight: 600; }
+
+        .result-area { margin-top: 25px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 16px; border: var(--glass-border); display: none; text-align: left; animation: slideUp 0.4s ease forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .result-info { display: flex; gap: 15px; align-items: center; margin-bottom: 15px; }
-        .result-thumb { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: #333; }
-        .result-title { font-size: 14px; font-weight: bold; line-height: 1.4; }
+        .result-thumb { width: 70px; height: 70px; border-radius: 10px; object-fit: cover; background: #222; border: 1px solid rgba(255,255,255,0.1); }
+        .result-title { font-size: 14px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        .btn-save {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            text-align: center;
-            background: linear-gradient(45deg, #11998e, #38ef7d);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 14px;
-        }
+        .btn-save { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; text-align: center; background: linear-gradient(135deg, #11998e, #38ef7d); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 14px; transition: 0.2s; box-shadow: 0 4px 15px rgba(56, 239, 125, 0.2); }
+        .btn-save:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(56, 239, 125, 0.4); }
 
-        .footer-watermark {
-            margin-top: 30px;
-            font-size: 12px;
-            color: var(--text-muted);
-            opacity: 0.7;
-        }
-
-        .loading { display: none; margin-top: 10px; font-size: 12px; color: var(--secondary); }
-        .error-msg { color: #ff6b6b; font-size: 12px; margin-top: 10px; display: none; }
-
+        .footer-watermark { margin-top: 30px; font-size: 11px; color: var(--text-muted); opacity: 0.6; letter-spacing: 0.5px; }
+        .error-msg { color: #ff6b6b; font-size: 12px; margin-top: 12px; display: none; background: rgba(255,107,107,0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,107,107,0.2); }
     </style>
 </head>
 <body>
@@ -179,31 +125,36 @@
             <label id="inputLabel">Tempel Link YouTube:</label>
             <div class="input-wrapper">
                 <input type="text" id="urlInput" placeholder="https://youtube.com/...">
+                <button class="btn-paste" onclick="pasteClipboard()">📋 Paste</button>
             </div>
         </div>
 
         <button class="btn-download" id="actionBtn" onclick="processDownload()">🚀 Unduh Sekarang</button>
-        <div class="loading" id="loadingText">Sedang memproses... Mohon tunggu...</div>
+        
+        <!-- Progress Bar Area -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText">Menghubungkan ke server...</div>
+        
         <div class="error-msg" id="errorMsg"></div>
 
         <div class="result-area" id="resultArea">
             <div class="result-info">
                 <img src="" alt="Thumb" class="result-thumb" id="resThumb">
                 <div>
-                    <div style="font-size: 10px; color: #aaa;">JUDUL MEDIA:</div>
+                    <div style="font-size: 10px; color: #aaa; margin-bottom: 4px;">JUDUL MEDIA:</div>
                     <div class="result-title" id="resTitle">-</div>
                 </div>
             </div>
             <a href="#" class="btn-save" id="resLink" target="_blank">⬇ Simpan ke Perangkat</a>
         </div>
 
-        <div class="footer-watermark">
-            Made with ❤️ by FACHRI DEV
-        </div>
+        <div class="footer-watermark">Made with ❤️ by FACHRI DEV</div>
     </div>
 
     <script>
-        let currentMode = 'youtube'; // 'youtube' atau 'tiktok'
+        let currentMode = 'youtube';
 
         function switchTab(mode) {
             currentMode = mode;
@@ -211,72 +162,117 @@
             const label = document.getElementById('inputLabel');
             const input = document.getElementById('urlInput');
             
-            // Reset UI
             document.getElementById('resultArea').style.display = 'none';
             document.getElementById('errorMsg').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('progressText').style.display = 'none';
             input.value = '';
 
             if (mode === 'youtube') {
-                btns[0].classList.add('active');
-                btns[1].classList.remove('active');
-                label.innerText = "Tempel Link YouTube:";
-                input.placeholder = "https://youtube.com/watch?v=...";
+                btns[0].classList.add('active'); btns[1].classList.remove('active');
+                label.innerText = "Tempel Link YouTube:"; input.placeholder = "https://youtube.com/watch?v=...";
             } else {
-                btns[0].classList.remove('active');
-                btns[1].classList.add('active');
-                label.innerText = "Tempel Link TikTok:";
-                input.placeholder = "https://vt.tiktok.com/...";
+                btns[0].classList.remove('active'); btns[1].classList.add('active');
+                label.innerText = "Tempel Link TikTok:"; input.placeholder = "https://vt.tiktok.com/...";
             }
+        }
+
+        async function pasteClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('urlInput').value = text;
+                // Efek visual kecil saat paste
+                const input = document.getElementById('urlInput');
+                input.style.borderColor = '#38ef7d';
+                setTimeout(() => input.style.borderColor = '', 500);
+            } catch (err) {
+                alert("Gagal mengakses clipboard. Izinkan permission browser atau paste manual (Ctrl+V).");
+            }
+        }
+
+        // Fungsi simulasi progress bar agar UX terasa premium
+        function simulateProgress(callback) {
+            const container = document.getElementById('progressContainer');
+            const bar = document.getElementById('progressBar');
+            const text = document.getElementById('progressText');
+            
+            container.style.display = 'block';
+            text.style.display = 'block';
+            bar.style.width = '0%';
+            
+            let width = 0;
+            const stages = ["Menganalisis link...", "Menghubungi API RapidAPI...", "Mengekstrak media...", "Hampir selesai..."];
+            let stageIdx = 0;
+
+            const interval = setInterval(() => {
+                if (width >= 90) { clearInterval(interval); return; } // Stop di 90% sampai request selesai
+                width += Math.random() * 15;
+                if(width > 90) width = 90;
+                bar.style.width = width + '%';
+                
+                if(width > 25 && stageIdx === 0) { text.innerText = stages[1]; stageIdx++; }
+                if(width > 55 && stageIdx === 1) { text.innerText = stages[2]; stageIdx++; }
+                if(width > 80 && stageIdx === 2) { text.innerText = stages[3]; stageIdx++; }
+            }, 300);
+
+            // Simpan interval ID supaya bisa di-clear nanti
+            window.currentProgressInterval = interval;
+        }
+
+        function finishProgress(success) {
+            clearInterval(window.currentProgressInterval);
+            const bar = document.getElementById('progressBar');
+            const text = document.getElementById('progressText');
+            const container = document.getElementById('progressContainer');
+            
+            bar.style.width = '100%';
+            text.innerText = success ? "✅ Berhasil!" : "❌ Gagal.";
+            
+            setTimeout(() => {
+                container.style.display = 'none';
+                text.style.display = 'none';
+                bar.style.width = '0%';
+            }, 1500);
         }
 
         async function processDownload() {
             const url = document.getElementById('urlInput').value.trim();
             const btn = document.getElementById('actionBtn');
-            const loading = document.getElementById('loadingText');
             const errorMsg = document.getElementById('errorMsg');
             const resultArea = document.getElementById('resultArea');
 
-            if (!url) {
-                showError("Link tidak boleh kosong, Murid!");
-                return;
-            }
+            if (!url) { showError("Link tidak boleh kosong, Murid!"); return; }
 
-            // UI Loading State
             btn.disabled = true;
-            loading.style.display = 'block';
+            btn.innerText = "⏳ Memproses...";
             errorMsg.style.display = 'none';
             resultArea.style.display = 'none';
+            
+            simulateProgress();
 
             try {
-                // Panggil Backend kita sendiri (bukan langsung ke RapidAPI demi keamanan)
                 const endpoint = currentMode === 'youtube' ? '/api/download/youtube' : '/api/download/tiktok';
                 const response = await fetch(`${endpoint}?url=${encodeURIComponent(url)}`);
                 const data = await response.json();
 
-                if (!response.ok) {
-                    throw new Error(data.error || "Terjadi kesalahan pada server.");
-                }
+                if (!response.ok) throw new Error(data.error || "Server error.");
 
-                // Tampilkan Hasil
                 document.getElementById('resTitle').innerText = data.title;
-                document.getElementById('resThumb').src = data.thumb || 'https://via.placeholder.com/60';
+                document.getElementById('resThumb').src = data.thumb || 'https://via.placeholder.com/70/333/fff?text=Media';
+                document.getElementById('resLink').href = data.link;
                 
-                const saveBtn = document.getElementById('resLink');
-                saveBtn.href = data.link;
-                // Untuk memaksa download di browser, kadang perlu trik, tapi target=_blank biasanya cukup untuk mobile
-                saveBtn.setAttribute('download', ''); 
-
                 resultArea.style.display = 'block';
-                
-                // Tambah counter palsu biar keren
                 let count = parseInt(document.getElementById('downloadCount').innerText);
                 document.getElementById('downloadCount').innerText = count + 1;
+                
+                finishProgress(true);
 
             } catch (err) {
                 showError(err.message);
+                finishProgress(false);
             } finally {
                 btn.disabled = false;
-                loading.style.display = 'none';
+                btn.innerText = "🚀 Unduh Sekarang";
             }
         }
 
