@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Downloader - FACHRI DEV</title>
+    <style>
+        :root {
+            --bg-color: #0f0c29;
+            --card-bg: rgba(30, 30, 50, 0.7);
+            --primary: #ff4b2b;
+            --secondary: #ff416c;
+            --text: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent-glow: 0 0 15px rgba(255, 75, 43, 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background: linear-gradient(to right, #24243e, #302b63, #0f0c29);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            border: 3px solid var(--secondary);
+            box-shadow: var(--accent-glow);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            background: -webkit-linear-gradient(var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
+        .stats { font-size: 12px; color: var(--primary); margin-bottom: 30px; }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: var(--accent-glow);
+        }
+
+        .input-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+        
+        .input-wrapper { position: relative; }
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.3);
+            color: white;
+            outline: none;
+            font-size: 14px;
+        }
+        input[type="text"]:focus { border-color: var(--secondary); }
+
+        .btn-download {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: var(--accent-glow);
+            transition: transform 0.2s;
+        }
+        .btn-download:active { transform: scale(0.98); }
+        .btn-download:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .result-area {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            display: none; /* Sembunyi dulu */
+            text-align: left;
+        }
+
+        .result-info { display: flex; gap: 15px; align-items: center; margin-bottom: 15px; }
+        .result-thumb { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: #333; }
+        .result-title { font-size: 14px; font-weight: bold; line-height: 1.4; }
+
+        .btn-save {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            text-align: center;
+            background: linear-gradient(45deg, #11998e, #38ef7d);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .footer-watermark {
+            margin-top: 30px;
+            font-size: 12px;
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        .loading { display: none; margin-top: 10px; font-size: 12px; color: var(--secondary); }
+        .error-msg { color: #ff6b6b; font-size: 12px; margin-top: 10px; display: none; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="profile-pic">FD</div>
+        <h1>Media Downloader</h1>
+        <p class="subtitle">Enterprise High-Speed Media Downloader</p>
+        <p class="stats">🔥 Total Unduhan: <span id="downloadCount">1257</span></p>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('youtube')">YouTube MP3</button>
+            <button class="tab-btn" onclick="switchTab('tiktok')">TikTok Video</button>
+        </div>
+
+        <div class="input-group">
+            <label id="inputLabel">Tempel Link YouTube:</label>
+            <div class="input-wrapper">
+                <input type="text" id="urlInput" placeholder="https://youtube.com/...">
+            </div>
+        </div>
+
+        <button class="btn-download" id="actionBtn" onclick="processDownload()">🚀 Unduh Sekarang</button>
+        <div class="loading" id="loadingText">Sedang memproses... Mohon tunggu...</div>
+        <div class="error-msg" id="errorMsg"></div>
+
+        <div class="result-area" id="resultArea">
+            <div class="result-info">
+                <img src="" alt="Thumb" class="result-thumb" id="resThumb">
+                <div>
+                    <div style="font-size: 10px; color: #aaa;">JUDUL MEDIA:</div>
+                    <div class="result-title" id="resTitle">-</div>
+                </div>
+            </div>
+            <a href="#" class="btn-save" id="resLink" target="_blank">⬇ Simpan ke Perangkat</a>
+        </div>
+
+        <div class="footer-watermark">
+            Made with ❤️ by FACHRI DEV
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'youtube'; // 'youtube' atau 'tiktok'
+
+        function switchTab(mode) {
+            currentMode = mode;
+            const btns = document.querySelectorAll('.tab-btn');
+            const label = document.getElementById('inputLabel');
+            const input = document.getElementById('urlInput');
+            
+            // Reset UI
+            document.getElementById('resultArea').style.display = 'none';
+            document.getElementById('errorMsg').style.display = 'none';
+            input.value = '';
+
+            if (mode === 'youtube') {
+                btns[0].classList.add('active');
+                btns[1].classList.remove('active');
+                label.innerText = "Tempel Link YouTube:";
+                input.placeholder = "https://youtube.com/watch?v=...";
+            } else {
+                btns[0].classList.remove('active');
+                btns[1].classList.add('active');
+                label.innerText = "Tempel Link TikTok:";
+                input.placeholder = "https://vt.tiktok.com/...";
+            }
+        }
+
+        async function processDownload() {
+            const url = document.getElementById('urlInput').value.trim();
+            const btn = document.getElementById('actionBtn');
+            const loading = document.getElementById('loadingText');
+            const errorMsg = document.getElementById('errorMsg');
+            const resultArea = document.getElementById('resultArea');
+
+            if (!url) {
+                showError("Link tidak boleh kosong, Murid!");
+                return;
+            }
+
+            // UI Loading State
+            btn.disabled = true;
+            loading.style.display = 'block';
+            errorMsg.style.display = 'none';
+            resultArea.style.display = 'none';
+
+            try {
+                // Panggil Backend kita sendiri (bukan langsung ke RapidAPI demi keamanan)
+                const endpoint = currentMode === 'youtube' ? '/api/download/youtube' : '/api/download/tiktok';
+                const response = await fetch(`${endpoint}?url=${encodeURIComponent(url)}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Terjadi kesalahan pada server.");
+                }
+
+                // Tampilkan Hasil
+                document.getElementById('resTitle').innerText = data.title;
+                document.getElementById('resThumb').src = data.thumb || 'https://via.placeholder.com/60';
+                
+                const saveBtn = document.getElementById('resLink');
+                saveBtn.href = data.link;
+                // Untuk memaksa download di browser, kadang perlu trik, tapi target=_blank biasanya cukup untuk mobile
+                saveBtn.setAttribute('download', ''); 
+
+                resultArea.style.display = 'block';
+                
+                // Tambah counter palsu biar keren
+                let count = parseInt(document.getElementById('downloadCount').innerText);
+                document.getElementById('downloadCount').innerText = count + 1;
+
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function showError(msg) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.innerText = "❌ " + msg;
+            errorMsg.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
