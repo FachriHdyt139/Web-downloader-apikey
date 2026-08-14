@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// --- KONFIGURASI API KEY (Hanya untuk YouTube sekarang) ---
+// --- KONFIGURASI API KEY (Hanya untuk YouTube) ---
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY; 
 const YT_HOST = 'youtube-mp36.p.rapidapi.com';
 
@@ -25,7 +25,7 @@ function extractYouTubeId(url) {
     } catch (e) { return null; }
 }
 
-// --- ROUTE 1: YOUTUBE MP3 (Tetap pakai RapidAPI karena stabil) ---
+// --- ROUTE 1: YOUTUBE MP3 (Tetap pakai RapidAPI) ---
 app.get('/api/download/youtube', async (req, res) => {
     const videoUrl = req.query.url;
     if (!videoUrl) return res.status(400).json({ error: "Link YouTube kosong!" });
@@ -51,74 +51,68 @@ app.get('/api/download/youtube', async (req, res) => {
     }
 });
 
-// --- ROUTE 2: TIKTOK VIDEO (SENJATA PAMUNGKAS: BYPASS API, LANGSUNG SCRAPING) ---
+// --- ROUTE 2: TIKTOK VIDEO (JURUS PAMUNGKAS: MULTI-PROXY FALLBACK) ---
 app.get('/api/download/tiktok', async (req, res) => {
-    let videoUrl = req.query.url;
+    const videoUrl = req.query.url;
     if (!videoUrl) return res.status(400).json({ error: "Link TikTok kosong!" });
 
-    try {
-        // 1. Kalau link pendek (vt.tiktok.com), kita harus resolve dulu ke link panjang
-        if (videoUrl.includes('vt.tiktok.com') || videoUrl.includes('vm.tiktok.com')) {
-            const redirectRes = await axios.get(videoUrl, { maxRedirects: 0, validateStatus: () => true });
-            if (redirectRes.headers.location) {
-                videoUrl = redirectRes.headers.location;
-            }
+    // Daftar Server Perantara (Proxy) Publik yang stabil di 2026
+    // Kita akan coba satu per satu sampai ada yang berhasil mengembalikan link video
+    const proxies = [
+        {
+            name: 'TikWM Primary',
+            url: 'https://www.tikwm.com/api/',
+            method: 'post',
+            data: { url: videoUrl, hd: 1 },
+            extract: (d) => ({ link: d.data.hd || d.data.play, title: d.data.title, thumb: d.data.cover })
+        },
+        {
+            name: 'TikWM GET Fallback',
+            url: `https://www.tikwm.com/api/?url=${encodeURIComponent(videoUrl)}&hd=1`,
+            method: 'get',
+            extract: (d) => ({ link: d.data.hd || d.data.play, title: d.data.title, thumb: d.data.cover })
         }
+    ];
 
-        // 2. Tembak halaman TikTok langsung dengan User-Agent browser (biar tidak diblokir)
-        const response = await axios.get(videoUrl, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
-            }
-        });
+    let lastError = null;
 
-        const html = response.data;
+    for (let proxy of proxies) {
+        try {
+            console.log(`Mencoba proxy: ${proxy.name}...`);
+            const config = {
+                method: proxy.method,
+                url: proxy.url,
+                headers: { 'Content-Type': 'application/json' }
+            };
+            if (proxy.data) config.data = proxy.data;
 
-        // 3. Ekstrak Data dari HTML (Mencari JSON tersembunyi di dalam halaman TikTok)
-        // TikTok menyimpan data video di dalam tag <script id="__UNIVERSAL_DATA_FOR_REHYDRATION__"> atau script lain
-        let videoData = null;
-        
-        // Metode A: Cari URL video langsung via Regex (Paling ampuh untuk direct download)
-        // Mencari pola playAddr atau downloadAddr
-        const videoUrlMatch = html.match(/"playAddr":"(.*?)"/) || html.match(/"downloadAddr":"(.*?)"/) || html.match(/"play_addr":\{"url_list":$$"(.*?)"$$/);
-        
-        // Metode B: Cari judul
-        const titleMatch = html.match(/"desc":"(.*?)"/) || html.match(/<title>(.*?)<\/title>/);
-        
-        // Metode C: Cari thumbnail
-        const thumbMatch = html.match(/"cover":"(.*?)"/) || html.match(/"originCover":"(.*?)"/);
-
-        if (videoUrlMatch && videoUrlMatch[1]) {
-            // Bersihkan URL dari escape character JSON (misal \/ menjadi /)
-            let cleanUrl = videoUrlMatch[1].replace(/\\\//g, '/');
+            const response = await axios(config, { timeout: 10000 }); // Timeout 10 detik
             
-            // Kadang URL butuh parameter tambahan biar bisa didownload langsung
-            if (!cleanUrl.includes('tiktokcdn.com')) {
-                 // Fallback kalau regex pertama gagal dapat CDN utama
-                 const cdnMatch = html.match(/https:\/\/v[0-9]+-[a-z]+\.tiktokcdn\.com\/.*?\.mp4/);
-                 if(cdnMatch) cleanUrl = cdnMatch[0];
+            if (response.data && response.data.code === 0 && response.data.data) {
+                const result = proxy.extract(response.data);
+                if (result.link && result.link.startsWith('http')) {
+                    console.log(`Berhasil via ${proxy.name}!`);
+                    return res.json({
+                        success: true,
+                        title: result.title || "TikTok Video",
+                        link: result.link,
+                        thumb: result.thumb || ""
+                    });
+                }
             }
-
-            let cleanTitle = titleMatch ? titleMatch[1].replace(/\\/g, '') : "TikTok Video";
-            let cleanThumb = thumbMatch ? thumbMatch[1].replace(/\\\//g, '/') : "";
-
-            return res.json({
-                success: true,
-                title: cleanTitle.substring(0, 100), // Batasi panjang judul
-                link: cleanUrl,
-                thumb: cleanThumb
-            });
-        } else {
-            throw new Error("Pola video tidak ditemukan di halaman. Mungkin video di-private atau TikTok mengubah struktur webnya.");
+            throw new Error("Respons proxy tidak mengandung link video.");
+            
+        } catch (err) {
+            lastError = err;
+            console.warn(`Proxy ${proxy.name} gagal: ${err.message}. Mencoba alternatif...`);
+            continue; // Lanjut ke proxy berikutnya
         }
-
-    } catch (error) {
-        console.error("TT Bypass Error:", error.message);
-        res.status(500).json({ 
-            error: "Gagal mengekstrak TikTok. Pastikan: 1. Link publik (bukan private), 2. Video tidak dihapus. (Sistem bypass API sedang bekerja)." 
-        });
     }
+
+    console.error("Semua proxy TikTok gagal.", lastError?.message);
+    res.status(500).json({ 
+        error: "Semua server perantara TikTok sedang sibuk atau memblokir permintaan. Coba lagi dalam 1 menit, atau pastikan link benar-benar publik." 
+    });
 });
 
 app.listen(PORT, () => console.log(`🚀 Server FACHRI DEV berjalan di port ${PORT}`));
