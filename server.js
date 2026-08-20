@@ -165,8 +165,21 @@ app.get('/api/download/tiktok', async (req, res) => {
 
 // --- FUNGSI BANTUAN: Ekstrak URL SoundCloud dari teks ---
 function extractSoundcloudUrl(text) {
-    const m = String(text || '').match(/https?:\/\/(?:www\.)?soundcloud\.com\/[^\s]+/);
-    return m ? m[0] : null;
+    const m = String(text || '').trim().match(/(?:https?:\/\/)?(?:[\w-]+\.)*soundcloud\.com\/[^\s'"<>]+/i);
+    return m ? m[0].replace(/[.,;:!?'"]+$/, '') : null;
+}
+
+// --- FUNGSI BANTUAN: Ikuti redirect link pendek (on.soundcloud.com) ke URL penuh ---
+async function resolveSoundcloudUrl(url) {
+    let current = url;
+    for (let i = 0; i < 5; i++) {
+        try {
+            const res = await axios.get(current, { maxRedirects: 0, validateStatus: () => true, timeout: 10000 });
+            if (res.headers.location) { current = new URL(res.headers.location, current).toString(); continue; }
+            break;
+        } catch (e) { break; }
+    }
+    return current.split('?')[0]; // Buang query tracking (ref, utm_source, dll)
 }
 
 // --- ROUTE 3A: SOUNDCLOUD - PENCARIAN (via RapidAPI) ---
@@ -198,7 +211,7 @@ app.get('/api/download/soundcloud/info', async (req, res) => {
     const trackUrl = extractSoundcloudUrl(req.query.url || '');
     if (!trackUrl) return res.status(400).json({ error: "Link SoundCloud tidak valid." });
     try {
-        const info = await soundcloud.getInfo(trackUrl);
+        const info = await soundcloud.getInfo(await resolveSoundcloudUrl(trackUrl));
         res.json({
             success: true,
             title: cleanTitle(info.title),
@@ -217,8 +230,9 @@ app.get('/api/download/soundcloud', async (req, res) => {
     const trackUrl = extractSoundcloudUrl(req.query.url || '');
     if (!trackUrl) return res.status(400).json({ error: "Link SoundCloud kosong!" });
     try {
-        const info = await soundcloud.getInfo(trackUrl);
-        const audioStream = await soundcloud.download(trackUrl);
+        const fullUrl = await resolveSoundcloudUrl(trackUrl);
+        const info = await soundcloud.getInfo(fullUrl);
+        const audioStream = await soundcloud.download(fullUrl);
         incrementStat();
         const cleanFilename = cleanTitle(info.title).replace(/\s+/g, '_');
         res.setHeader('Content-Type', 'audio/mpeg');
