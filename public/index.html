@@ -5,95 +5,240 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FACHRI DEV Downloader - Ultimate</title>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#ff4b2b">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Tema Gelap (Default) */
-            --bg-color: #0f0c29; --bg-gradient: radial-gradient(circle at top left, #302b63, #0f0c29);
-            --card-bg: rgba(30, 30, 50, 0.6); --text: #ffffff; --text-muted: #a0a0a0;
-            --primary: #ff4b2b; --secondary: #ff416c; --glass-border: 1px solid rgba(255, 255, 255, 0.08);
-            --input-bg: rgba(0,0,0,0.4); --history-bg: rgba(0,0,0,0.3);
+            /* Tema Gelap Premium (Default) */
+            --bg: #0a0a0f;
+            --bg-blob-1: rgba(99, 102, 241, 0.10);
+            --bg-blob-2: rgba(139, 92, 246, 0.08);
+            --card-bg: rgba(255, 255, 255, 0.045);
+            --card-border: 1px solid rgba(255, 255, 255, 0.09);
+            --text: #f5f5f7;
+            --text-muted: #a1a1aa;
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent-grad: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --input-bg: rgba(255, 255, 255, 0.06);
+            --input-border: 1px solid rgba(255, 255, 255, 0.10);
+            --history-bg: rgba(255, 255, 255, 0.03);
+            --shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+            --ring: rgba(99, 102, 241, 0.35);
         }
         body.light-mode {
-            /* Tema Terang */
-            --bg-gradient: radial-gradient(circle at top left, #e0eafc, #cfdef3);
-            --card-bg: rgba(255, 255, 255, 0.85); --text: #1a1a2e; --text-muted: #555555;
-            --glass-border: 1px solid rgba(0, 0, 0, 0.05); --input-bg: rgba(255,255,255,0.8); --history-bg: rgba(0,0,0,0.03);
+            /* Tema Terang Premium */
+            --bg: #f5f5f7;
+            --bg-blob-1: rgba(99, 102, 241, 0.12);
+            --bg-blob-2: rgba(139, 92, 246, 0.10);
+            --card-bg: rgba(255, 255, 255, 0.92);
+            --card-border: 1px solid rgba(0, 0, 0, 0.05);
+            --text: #1d1d1f;
+            --text-muted: #6e6e73;
+            --primary: #4f46e5;
+            --secondary: #7c3aed;
+            --input-bg: rgba(0, 0, 0, 0.04);
+            --input-border: 1px solid rgba(0, 0, 0, 0.08);
+            --history-bg: rgba(0, 0, 0, 0.02);
+            --shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
+            --ring: rgba(79, 70, 229, 0.25);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; transition: background 0.3s, color 0.3s; }
-        body { background: var(--bg-gradient); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-x: hidden; }
-        
-        .container { background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 24px; padding: 40px 30px; width: 100%; max-width: 480px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); border: var(--glass-border); text-align: center; position: relative; overflow: hidden; }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
+        html { -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background: var(--bg); color: var(--text); min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 24px; overflow-x: hidden; position: relative;
+            transition: background 0.4s ease, color 0.3s ease;
+        }
+        /* Blob lembut di belakang (premium, tidak ramai) */
+        body::before, body::after {
+            content: ''; position: fixed; border-radius: 50%; filter: blur(90px); z-index: 0; pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        body::before { width: 420px; height: 420px; background: var(--bg-blob-1); top: -120px; left: -100px; }
+        body::after { width: 380px; height: 380px; background: var(--bg-blob-2); bottom: -120px; right: -100px; }
+
+        .container {
+            background: var(--card-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-radius: 28px; padding: 44px 32px; width: 100%; max-width: 480px;
+            box-shadow: var(--shadow); border: var(--card-border); text-align: center;
+            position: relative; overflow: hidden; z-index: 1;
+            animation: cardIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
         /* Theme Toggle Button */
-        .theme-toggle { position: absolute; top: 20px; right: 20px; background: var(--input-bg); border: var(--glass-border); color: var(--text); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 10; }
-        .theme-toggle:hover { transform: scale(1.1); }
+        .theme-toggle {
+            position: absolute; top: 18px; right: 18px; background: var(--input-bg); border: var(--input-border);
+            color: var(--text); width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 10;
+            transition: transform 0.25s ease, background 0.3s ease, border-color 0.3s ease;
+        }
+        .theme-toggle:hover { transform: scale(1.08); border-color: var(--primary); }
 
-        .profile-pic { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 22px; color: white; border: 3px solid rgba(255,255,255,0.2); box-shadow: 0 0 20px rgba(255, 75, 43, 0.4); }
-        h1 { font-size: 20px; margin-bottom: 5px; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 1px; }
-        .subtitle { color: var(--text-muted); font-size: 12px; margin-bottom: 15px; }
-        .stats { font-size: 12px; color: var(--secondary); margin-bottom: 25px; font-weight: 600; background: var(--input-bg); display: inline-block; padding: 5px 12px; border-radius: 20px; }
+        .profile-pic {
+            width: 64px; height: 64px; border-radius: 20px; background: var(--accent-grad);
+            margin: 0 auto 18px; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 20px; color: white; letter-spacing: 0.5px;
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.30);
+            animation: float 5s ease-in-out infinite;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: var(--input-bg); padding: 5px; border-radius: 12px; }
-        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; font-weight: 600; font-size: 13px; }
-        .tab-btn.active { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; box-shadow: 0 4px 15px rgba(255,75,43,0.3); }
+        h1 {
+            font-size: 22px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em;
+            background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle { color: var(--text-muted); font-size: 13px; font-weight: 400; margin-bottom: 18px; }
+        .stats {
+            font-size: 12px; color: var(--text); margin-bottom: 26px; font-weight: 600;
+            background: var(--input-bg); border: var(--input-border);
+            display: inline-block; padding: 6px 14px; border-radius: 999px;
+        }
+        .stats span { color: var(--primary); }
 
-        .input-group { margin-bottom: 20px; text-align: left; }
-        label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; margin-left: 5px; font-weight: 600; }
+        .tabs {
+            display: flex; gap: 4px; margin-bottom: 22px; background: var(--input-bg);
+            border: var(--input-border); padding: 4px; border-radius: 14px;
+        }
+        .tab-btn {
+            flex: 1; padding: 11px 8px; border: none; border-radius: 10px; background: transparent;
+            color: var(--text-muted); cursor: pointer; font-weight: 600; font-size: 12.5px;
+            transition: all 0.3s ease;
+        }
+        .tab-btn:hover { color: var(--text); }
+        .tab-btn.active {
+            background: var(--accent-grad); color: white;
+            box-shadow: 0 6px 18px rgba(99, 102, 241, 0.30);
+        }
+
+        .input-group { margin-bottom: 18px; text-align: left; }
+        label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; margin-left: 4px; font-weight: 600; letter-spacing: 0.02em; }
         .input-wrapper { position: relative; display: flex; align-items: center; }
-        input[type="text"] { width: 100%; padding: 15px 50px 15px 15px; border-radius: 12px; border: var(--glass-border); background: var(--input-bg); color: var(--text); outline: none; font-size: 13px; }
-        input[type="text"]:focus { border-color: var(--secondary); box-shadow: 0 0 10px rgba(255,65,108,0.2); }
-        .btn-paste { position: absolute; right: 8px; background: rgba(128,128,128,0.2); border: none; color: var(--text); padding: 8px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; }
+        input[type="text"] {
+            width: 100%; padding: 15px 52px 15px 16px; border-radius: 14px; border: var(--input-border);
+            background: var(--input-bg); color: var(--text); outline: none; font-size: 13px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        input[type="text"]:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--ring); }
+        input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
+        .btn-paste {
+            position: absolute; right: 8px; background: var(--input-bg); border: var(--input-border);
+            color: var(--text); padding: 8px 11px; border-radius: 9px; font-size: 11px; cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .btn-paste:hover { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .btn-download { width: 100%; padding: 15px; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; font-size: 15px; font-weight: bold; cursor: pointer; box-shadow: 0 0 20px rgba(255, 75, 43, 0.4); position: relative; overflow: hidden; }
+        .btn-download {
+            width: 100%; padding: 16px; border: none; border-radius: 14px; background: var(--accent-grad);
+            color: white; font-size: 15px; font-weight: 700; cursor: pointer; letter-spacing: 0.01em;
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.32); position: relative; overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+        }
+        .btn-download:hover { transform: translateY(-1px); box-shadow: 0 16px 38px rgba(99, 102, 241, 0.42); }
         .btn-download:active { transform: scale(0.97); }
-        .btn-download:disabled { opacity: 0.7; cursor: not-allowed; }
+        .btn-download:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
-        .progress-container { width: 100%; height: 6px; background: var(--input-bg); border-radius: 10px; margin-top: 15px; overflow: hidden; display: none; }
-        .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary), #ff8a00); border-radius: 10px; transition: width 0.4s ease; position: relative; }
-        .progress-bar::after { content: ''; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transform: translateX(-100%); animation: shimmer 1.5s infinite; }
+        .progress-container {
+            width: 100%; height: 6px; background: var(--input-bg); border-radius: 10px;
+            margin-top: 16px; overflow: hidden; display: none;
+        }
+        .progress-bar {
+            height: 100%; width: 0%; background: var(--accent-grad); border-radius: 10px;
+            transition: width 0.4s ease; position: relative;
+        }
+        .progress-bar::after {
+            content: ''; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transform: translateX(-100%); animation: shimmer 1.4s infinite;
+        }
         @keyframes shimmer { 100% { transform: translateX(100%); } }
-        .progress-text { font-size: 11px; color: var(--secondary); margin-top: 8px; display: none; font-weight: 600; }
+        .progress-text { font-size: 11px; color: var(--primary); margin-top: 8px; display: none; font-weight: 600; }
 
-        .result-area { margin-top: 20px; padding: 15px; background: var(--history-bg); border-radius: 16px; border: var(--glass-border); display: none; text-align: left; animation: slideUp 0.4s ease forwards; }
+        .result-area {
+            margin-top: 20px; padding: 16px; background: var(--history-bg); border-radius: 16px;
+            border: var(--card-border); display: none; text-align: left;
+            animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .result-info { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
-        .result-thumb { width: 84px; height: 84px; border-radius: 10px; object-fit: cover; background: #222; border: 1px solid rgba(255,255,255,0.1); }
-        .result-title { font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .btn-save { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background: linear-gradient(135deg, #11998e, #38ef7d); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 13px; }
+        .result-info { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+        .result-thumb {
+            width: 84px; height: 84px; border-radius: 12px; object-fit: cover;
+            background: var(--input-bg); border: var(--input-border);
+        }
+        .result-title { font-size: 13px; font-weight: 600; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .btn-save {
+            display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+            padding: 13px; background: var(--accent-grad); color: white; text-decoration: none;
+            border-radius: 12px; font-weight: 700; font-size: 13px; transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+        .btn-save:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(99, 102, 241, 0.35); }
 
         /* Hasil Pencarian SoundCloud */
         .sc-results { margin-top: 20px; display: none; flex-direction: column; gap: 10px; }
-        .sc-result { display: flex; gap: 10px; align-items: center; background: var(--history-bg); border: var(--glass-border); border-radius: 12px; padding: 10px; animation: slideUp 0.4s ease forwards; }
-        .sc-result img { width: 46px; height: 46px; border-radius: 8px; object-fit: cover; background: #222; }
+        .sc-result {
+            display: flex; gap: 10px; align-items: center; background: var(--history-bg);
+            border: var(--card-border); border-radius: 14px; padding: 10px;
+            animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .sc-result img { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; background: var(--input-bg); }
         .sc-result .sc-info { flex: 1; min-width: 0; }
         .sc-result .sc-title { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sc-result .sc-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
-        .sc-result button { background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; color: white; padding: 9px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; flex-shrink: 0; }
+        .sc-result button {
+            background: var(--accent-grad); border: none; color: white; padding: 9px 12px;
+            border-radius: 9px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+        .sc-result button:hover { transform: scale(1.05); }
 
         /* Preview Thumbnail */
-        .preview-area { margin-top: 15px; display: none; animation: slideUp 0.4s ease forwards; }
-        .preview-thumb-wrap { position: relative; border-radius: 14px; overflow: hidden; border: var(--glass-border); }
-        .preview-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #111; }
-        .preview-badge { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.75); color: white; font-size: 10px; font-weight: bold; padding: 5px 12px; border-radius: 6px; letter-spacing: 0.5px; }
-        .preview-badge.ready { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
-        .preview-hint { font-size: 10px; color: var(--text-muted); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+        .preview-area { margin-top: 15px; display: none; animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        .preview-thumb-wrap { position: relative; border-radius: 16px; overflow: hidden; border: var(--card-border); }
+        .preview-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: var(--input-bg); }
+        .preview-badge {
+            position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
+            color: white; font-size: 10px; font-weight: 700; padding: 5px 12px; border-radius: 999px; letter-spacing: 0.02em;
+        }
+        .preview-badge.ready { background: var(--accent-grad); }
+        .preview-hint { font-size: 10.5px; color: var(--text-muted); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
 
         /* History Section */
-        .history-section { margin-top: 25px; text-align: left; display: none; }
+        .history-section { margin-top: 24px; text-align: left; display: none; }
         .history-title { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
-        .clear-history { background: none; border: none; color: #ff6b6b; font-size: 10px; cursor: pointer; }
+        .clear-history { background: none; border: none; color: #f43f5e; font-size: 10px; font-weight: 600; cursor: pointer; }
+        .clear-history:hover { text-decoration: underline; }
         .history-list { list-style: none; max-height: 150px; overflow-y: auto; }
-        .history-item { background: var(--input-bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; border: var(--glass-border); }
-        .history-item a { color: var(--secondary); text-decoration: none; font-weight: bold; }
+        .history-item {
+            background: var(--input-bg); padding: 10px 12px; border-radius: 10px; margin-bottom: 8px;
+            font-size: 11px; display: flex; justify-content: space-between; align-items: center; border: var(--input-border);
+        }
+        .history-item a { color: var(--primary); text-decoration: none; font-weight: 700; }
 
-        .footer-watermark { margin-top: 25px; font-size: 10px; color: var(--text-muted); opacity: 0.6; }
-        .error-msg { color: #ff6b6b; font-size: 11px; margin-top: 10px; display: none; background: rgba(255,107,107,0.1); padding: 8px; border-radius: 8px; }
-        
+        .footer-watermark { margin-top: 26px; font-size: 10px; color: var(--text-muted); opacity: 0.6; font-weight: 400; }
+        .error-msg {
+            color: #f43f5e; font-size: 11px; margin-top: 12px; display: none;
+            background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.18);
+            padding: 10px 12px; border-radius: 12px; font-weight: 500;
+        }
+
         /* PWA Install Prompt */
-        #installPrompt { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--card-bg); backdrop-filter: blur(10px); border: var(--glass-border); padding: 15px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: none; align-items: center; gap: 15px; z-index: 100; animation: slideUp 0.5s ease; }
-        #installPrompt button { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        #installPrompt {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--card-bg); backdrop-filter: blur(16px); border: var(--card-border);
+            padding: 14px 18px; border-radius: 14px; box-shadow: var(--shadow);
+            display: none; align-items: center; gap: 14px; z-index: 100; animation: slideUp 0.5s ease;
+        }
+        #installPrompt button {
+            background: var(--accent-grad); color: white; border: none; padding: 8px 15px;
+            border-radius: 9px; font-weight: 700; cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -136,7 +281,7 @@
         </div>
 
         <button class="btn-download" id="actionBtn" onclick="processDownload()">🚀 Unduh Sekarang</button>
-        
+
         <div class="progress-container" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
         <div class="progress-text" id="progressText">Menghubungkan ke server...</div>
         <div class="error-msg" id="errorMsg"></div>
@@ -144,7 +289,7 @@
         <div class="result-area" id="resultArea">
             <div class="result-info">
                 <img src="" alt="Thumb" class="result-thumb" id="resThumb">
-                <div><div style="font-size: 9px; color: var(--text-muted); margin-bottom: 2px;">JUDUL BERSIH (AI):</div><div class="result-title" id="resTitle">-</div></div>
+                <div><div style="font-size: 9px; color: var(--text-muted); margin-bottom: 2px; letter-spacing: 0.04em;">JUDUL BERSIH (AI):</div><div class="result-title" id="resTitle">-</div></div>
             </div>
             <a href="#" class="btn-save" id="resLink" target="_blank">⬇ Simpan ke Perangkat</a>
         </div>
@@ -158,7 +303,7 @@
             <ul class="history-list" id="historyList"></ul>
         </div>
 
-        <div class="footer-watermark">Made with ❤️ by FACHRI DEV | v3.0 Ultimate</div>
+        <div class="footer-watermark">Made with ❤️ by FACHRI DEV | v3.1 Premium</div>
     </div>
 
     <script>
@@ -240,9 +385,9 @@
         }
 
         async function pasteClipboard() {
-            try { 
-                const text = await navigator.clipboard.readText(); 
-                document.getElementById('urlInput').value = text; 
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('urlInput').value = text;
                 autoDetect(text); // Trigger auto detect saat paste
             } catch (err) { alert("Gagal akses clipboard. Paste manual (Ctrl+V)."); }
         }
@@ -305,13 +450,13 @@
             const url = document.getElementById('urlInput').value.trim();
             const btn = document.getElementById('actionBtn'); const errorMsg = document.getElementById('errorMsg'); const resultArea = document.getElementById('resultArea');
             if (!url) { showError("Link tidak boleh kosong, Murid!"); return; }
-            
+
             btn.disabled = true; btn.innerText = "⏳ Memproses..."; errorMsg.style.display = 'none'; resultArea.style.display = 'none';
             simulateProgress();
 
             try {
                 const endpoint = currentMode === 'youtube' ? '/api/download/youtube' : '/api/download/tiktok';
-                
+
                 if (currentMode === 'soundcloud') {
                     if (url.includes('soundcloud.com')) {
                         // Mode URL → stream MP3 langsung
@@ -334,18 +479,18 @@
                     // Minta format JSON dulu biar bisa simpan ke history & dapat judul bersih
                     const response = await fetch(`${endpoint}?url=${encodeURIComponent(url)}&format=json`);
                     const contentType = response.headers.get("content-type");
-                    
+
                     if (contentType && contentType.includes("application/json")) {
                         const data = await response.json();
                         if (!response.ok) throw new Error(data.error || "Server error.");
-                        
+
                         document.getElementById('resTitle').innerText = data.title;
                         document.getElementById('resThumb').src = data.thumb || 'https://via.placeholder.com/60/333/fff?text=FD';
                         // Link save tetap mengarah ke endpoint streaming langsung
                         const streamLink = `${endpoint}?url=${encodeURIComponent(url)}`;
                         document.getElementById('resLink').href = streamLink;
                         resultArea.style.display = 'block';
-                        
+
                         saveToHistory(data.title, streamLink, 'TikTok');
                     } else {
                         // Fallback kalau server langsung stream
@@ -360,15 +505,15 @@
                     const response = await fetch(`${endpoint}?url=${encodeURIComponent(url)}`);
                     const data = await response.json();
                     if (!response.ok) throw new Error(data.error || "Server error.");
-                    
+
                     document.getElementById('resTitle').innerText = data.title;
                     document.getElementById('resThumb').src = data.thumb || 'https://via.placeholder.com/60/333/fff?text=FD';
                     document.getElementById('resLink').href = data.link;
                     resultArea.style.display = 'block';
-                    
+
                     saveToHistory(data.title, data.link, 'YouTube');
                 }
-                
+
                 fetchStats(); // Refresh angka statistik
                 finishProgress(true);
             } catch (err) {
