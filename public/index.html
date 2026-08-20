@@ -81,6 +81,21 @@
         }
         .theme-toggle:hover { transform: scale(1.08); border-color: var(--primary); }
 
+        /* Jam Digital Premium */
+        .clock {
+            font-size: 42px; font-weight: 300; letter-spacing: 0.04em; line-height: 1;
+            color: #b8b2d9; text-align: center; margin: 6px auto 18px;
+            text-shadow: 0 0 18px rgba(139, 92, 246, 0.45), 0 0 40px rgba(99, 102, 241, 0.20);
+            font-variant-numeric: tabular-nums; animation: clockIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        body.light-mode .clock {
+            color: #6b5fa8;
+            text-shadow: 0 0 18px rgba(139, 92, 246, 0.30), 0 0 40px rgba(99, 102, 241, 0.15);
+        }
+        @keyframes clockIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+        .clock .clock-sec { font-size: 18px; font-weight: 400; color: rgba(184, 178, 217, 0.55); margin-left: 2px; vertical-align: super; }
+        body.light-mode .clock .clock-sec { color: rgba(107, 95, 168, 0.55); }
+
         .profile-pic {
             width: 64px; height: 64px; border-radius: 20px; background: var(--accent-grad);
             margin: 0 auto 18px; display: flex; align-items: center; justify-content: center;
@@ -252,6 +267,7 @@
 
     <div class="container">
         <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+        <div class="clock" id="clock" aria-label="Jam digital">--:--<span class="clock-sec"></span></div>
         <div class="profile-pic">FD</div>
         <h1>Media Downloader</h1>
         <p class="subtitle">Enterprise High-Speed Media Downloader</p>
@@ -308,6 +324,18 @@
 
     <script>
         let currentMode = 'youtube';
+
+        // --- 0. JAM DIGITAL REAL-TIME ---
+        function updateClock() {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').childNodes[0].nodeValue = `${hh}:${mm}`;
+            document.getElementById('clock').querySelector('.clock-sec').textContent = ss;
+        }
+        updateClock();
+        setInterval(updateClock, 1000); // Update tiap detik
 
         // --- 1. DARK/LIGHT MODE ---
         function toggleTheme() {
