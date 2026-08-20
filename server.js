@@ -15,6 +15,8 @@ app.use(express.static('public'));
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY; 
 const YT_HOST = 'youtube-mp36.p.rapidapi.com';
 const TT_HOST = 'tiktok-video-downloader-api.p.rapidapi.com';
+const SC_HOST = 'soundcloud-scraper1.p.rapidapi.com';
+const soundcloud = require('soundcloud-downloader').default;
 
 // --- SISTEM STATISTIK HARIAN (Reset tiap 24 jam) ---
 let dailyStats = { count: 0, date: new Date().toDateString() };
@@ -158,6 +160,73 @@ app.get('/api/download/tiktok', async (req, res) => {
     } catch (err2) {
         console.error("[Metode 2] Gagal Total:", err2.message);
         res.status(500).json({ error: "Sistem Hybrid Gagal. Coba lagi nanti." });
+    }
+});
+
+// --- FUNGSI BANTUAN: Ekstrak URL SoundCloud dari teks ---
+function extractSoundcloudUrl(text) {
+    const m = String(text || '').match(/https?:\/\/(?:www\.)?soundcloud\.com\/[^\s]+/);
+    return m ? m[0] : null;
+}
+
+// --- ROUTE 3A: SOUNDCLOUD - PENCARIAN (via RapidAPI) ---
+app.get('/api/download/soundcloud/search', async (req, res) => {
+    const query = (req.query.q || '').trim();
+    if (!query) return res.status(400).json({ error: "Kata kunci pencarian kosong!" });
+    try {
+        const response = await axios.get(`https://${SC_HOST}/api/tracks/search`, {
+            params: { query },
+            headers: { 'x-rapidapi-key': RAPIDAPI_KEY, 'x-rapidapi-host': SC_HOST },
+            timeout: 15000
+        });
+        const tracks = (response.data.data?.tracks || []).slice(0, 8).map(t => ({
+            id: t.id,
+            title: cleanTitle(t.title),
+            thumb: t.artwork_url || "",
+            permalink: t.permalink_url || "",
+            duration: t.duration || 0
+        }));
+        res.json({ success: true, tracks });
+    } catch (error) {
+        console.error("SC Search Error:", error.response?.data || error.message);
+        res.status(500).json({ error: "Gagal mencari di SoundCloud. Cek API Key/Quota." });
+    }
+});
+
+// --- ROUTE 3B: SOUNDCLOUD - INFO PREVIEW (resolve URL) ---
+app.get('/api/download/soundcloud/info', async (req, res) => {
+    const trackUrl = extractSoundcloudUrl(req.query.url || '');
+    if (!trackUrl) return res.status(400).json({ error: "Link SoundCloud tidak valid." });
+    try {
+        const info = await soundcloud.getInfo(trackUrl);
+        res.json({
+            success: true,
+            title: cleanTitle(info.title),
+            thumb: info.artwork_url || "",
+            id: info.id,
+            permalink: info.permalink_url
+        });
+    } catch (error) {
+        console.error("SC Info Error:", error.message);
+        res.status(500).json({ error: "Gagal mengambil info SoundCloud. Pastikan link valid." });
+    }
+});
+
+// --- ROUTE 3: SOUNDCLOUD - DOWNLOAD MP3 (Streaming) ---
+app.get('/api/download/soundcloud', async (req, res) => {
+    const trackUrl = extractSoundcloudUrl(req.query.url || '');
+    if (!trackUrl) return res.status(400).json({ error: "Link SoundCloud kosong!" });
+    try {
+        const info = await soundcloud.getInfo(trackUrl);
+        const audioStream = await soundcloud.download(trackUrl);
+        incrementStat();
+        const cleanFilename = cleanTitle(info.title).replace(/\s+/g, '_');
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.setHeader('Content-Disposition', `attachment; filename="${cleanFilename}.mp3"`);
+        audioStream.pipe(res);
+    } catch (error) {
+        console.error("SC Download Error:", error.message);
+        res.status(500).json({ error: "Gagal download dari SoundCloud. Coba lagi nanti." });
     }
 });
 

@@ -63,6 +63,15 @@
         .result-title { font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .btn-save { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background: linear-gradient(135deg, #11998e, #38ef7d); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 13px; }
 
+        /* Hasil Pencarian SoundCloud */
+        .sc-results { margin-top: 20px; display: none; flex-direction: column; gap: 10px; }
+        .sc-result { display: flex; gap: 10px; align-items: center; background: var(--history-bg); border: var(--glass-border); border-radius: 12px; padding: 10px; animation: slideUp 0.4s ease forwards; }
+        .sc-result img { width: 46px; height: 46px; border-radius: 8px; object-fit: cover; background: #222; }
+        .sc-result .sc-info { flex: 1; min-width: 0; }
+        .sc-result .sc-title { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sc-result .sc-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+        .sc-result button { background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; color: white; padding: 9px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; flex-shrink: 0; }
+
         /* Preview Thumbnail */
         .preview-area { margin-top: 15px; display: none; animation: slideUp 0.4s ease forwards; }
         .preview-thumb-wrap { position: relative; border-radius: 14px; overflow: hidden; border: var(--glass-border); }
@@ -106,6 +115,7 @@
         <div class="tabs">
             <button class="tab-btn active" id="tabYt" onclick="switchTab('youtube')">YouTube MP3</button>
             <button class="tab-btn" id="tabTt" onclick="switchTab('tiktok')">TikTok Video</button>
+            <button class="tab-btn" id="tabSc" onclick="switchTab('soundcloud')">SoundCloud</button>
         </div>
 
         <div class="input-group">
@@ -138,6 +148,9 @@
             </div>
             <a href="#" class="btn-save" id="resLink" target="_blank">⬇ Simpan ke Perangkat</a>
         </div>
+
+        <!-- Hasil Pencarian SoundCloud -->
+        <div class="sc-results" id="scResults"></div>
 
         <!-- Riwayat Download -->
         <div class="history-section" id="historySection">
@@ -182,6 +195,21 @@
         function hidePreview() {
             document.getElementById('previewArea').style.display = 'none';
         }
+
+        async function showSoundcloudPreview(url) {
+            const area = document.getElementById('previewArea');
+            area.style.display = 'none';
+            try {
+                const res = await fetch(`/api/download/soundcloud/info?url=${encodeURIComponent(url)}`);
+                const data = await res.json();
+                if (!data.success) return;
+                document.getElementById('previewThumb').src = data.thumb || 'https://via.placeholder.com/300/333/fff?text=SC';
+                document.getElementById('previewBadge').textContent = '🎵 SoundCloud Terdeteksi';
+                document.getElementById('previewBadge').classList.add('ready');
+                document.getElementById('previewHint').innerHTML = `🎵 <b>${data.title}</b> · siap diunduh dalam format MP3`;
+                area.style.display = 'block';
+            } catch (e) { area.style.display = 'none'; }
+        }
         function autoDetect(url) {
             if (!url) { hidePreview(); return; }
             if (url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -190,6 +218,9 @@
             } else if (url.includes('tiktok.com')) {
                 if (currentMode !== 'tiktok') switchTab('tiktok');
                 hidePreview();
+            } else if (url.includes('soundcloud.com')) {
+                if (currentMode !== 'soundcloud') switchTab('soundcloud');
+                showSoundcloudPreview(url);
             } else {
                 hidePreview();
             }
@@ -199,9 +230,13 @@
             currentMode = mode;
             document.getElementById('tabYt').classList.toggle('active', mode === 'youtube');
             document.getElementById('tabTt').classList.toggle('active', mode === 'tiktok');
+            document.getElementById('tabSc').classList.toggle('active', mode === 'soundcloud');
             document.getElementById('resultArea').style.display = 'none';
+            document.getElementById('scResults').style.display = 'none';
             document.getElementById('errorMsg').style.display = 'none';
             hidePreview();
+            document.getElementById('inputLabel').innerText = mode === 'soundcloud' ? 'Tempel Link SoundCloud ATAU Ketik Kata Kunci:' : 'Tempel Link (Auto-Detect Aktif):';
+            document.getElementById('urlInput').placeholder = mode === 'soundcloud' ? 'Contoh: https://soundcloud.com/... atau ketik judul lagu...' : 'Paste link YouTube atau TikTok di sini...';
         }
 
         async function pasteClipboard() {
@@ -277,7 +312,25 @@
             try {
                 const endpoint = currentMode === 'youtube' ? '/api/download/youtube' : '/api/download/tiktok';
                 
-                if (currentMode === 'tiktok') {
+                if (currentMode === 'soundcloud') {
+                    if (url.includes('soundcloud.com')) {
+                        // Mode URL → stream MP3 langsung
+                        const streamLink = `/api/download/soundcloud?url=${encodeURIComponent(url)}`;
+                        document.getElementById('resTitle').innerText = "SoundCloud MP3 (Direct)";
+                        document.getElementById('resThumb').src = document.getElementById('previewThumb').src || 'https://via.placeholder.com/60/333/fff?text=SC';
+                        document.getElementById('resLink').href = streamLink;
+                        resultArea.style.display = 'block';
+                        saveToHistory("SoundCloud Track", streamLink, 'SoundCloud');
+                        window.location.href = streamLink;
+                    } else {
+                        // Mode pencarian → tampilkan daftar hasil
+                        const response = await fetch(`/api/download/soundcloud/search?q=${encodeURIComponent(url)}`);
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.error || "Server error.");
+                        renderScResults(data.tracks);
+                        if (data.tracks.length === 0) throw new Error("Tidak ada hasil untuk pencarian itu.");
+                    }
+                } else if (currentMode === 'tiktok') {
                     // Minta format JSON dulu biar bisa simpan ke history & dapat judul bersih
                     const response = await fetch(`${endpoint}?url=${encodeURIComponent(url)}&format=json`);
                     const contentType = response.headers.get("content-type");
@@ -325,6 +378,32 @@
             }
         }
         function showError(msg) { const errorMsg = document.getElementById('errorMsg'); errorMsg.innerText = "❌ " + msg; errorMsg.style.display = 'block'; }
+
+        // --- 5B. SOUNDCLOUD - HASIL PENCARIAN ---
+        function renderScResults(tracks) {
+            const container = document.getElementById('scResults');
+            container.innerHTML = '';
+            tracks.forEach(t => {
+                const mins = Math.floor(t.duration / 60000);
+                const secs = Math.floor((t.duration % 60000) / 1000);
+                const dur = t.duration ? `${mins}:${String(secs).padStart(2, '0')}` : '';
+                container.innerHTML += `
+                    <div class="sc-result">
+                        <img src="${t.thumb || 'https://via.placeholder.com/46/333/fff?text=SC'}" onerror="this.onerror=null;this.src='https://via.placeholder.com/46/333/fff?text=SC'">
+                        <div class="sc-info">
+                            <div class="sc-title">${t.title}</div>
+                            <div class="sc-sub">${dur ? '⏱ ' + dur + ' · ' : ''}SoundCloud</div>
+                        </div>
+                        <button onclick="downloadSc('${encodeURIComponent(t.permalink)}')">⬇ MP3</button>
+                    </div>`;
+            });
+            container.style.display = 'flex';
+        }
+        function downloadSc(permalink) {
+            const streamLink = '/api/download/soundcloud?url=' + permalink;
+            saveToHistory("SoundCloud Track", streamLink, 'SoundCloud');
+            window.location.href = streamLink;
+        }
 
         // --- 6. PWA INSTALL PROMPT ---
         let deferredPrompt;
