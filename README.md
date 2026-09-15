@@ -9,6 +9,7 @@
 [![RapidAPI](https://img.shields.io/badge/RapidAPI-Powered-0084FF?logo=rapidapi)](https://rapidapi.com)
 [![PWA](https://img.shields.io/badge/PWA-Enabled-5A0FC8)](https://developer.mozilla.org/docs/Web/Progressive_web_apps)
 [![Deploy](https://img.shields.io/badge/Deploy-Render-46E3B7?logo=render)](https://render.com)
+[![Security](https://img.shields.io/badge/Security-Helmet+RateLimit-FF6B6B)](https://helmetjs.github.io/)
 
 **Dibuat dengan ❤️ oleh [FACHRI DEV](https://github.com/FachriHdyt139)**
 
@@ -32,6 +33,8 @@
 - 🌙 **Dark / Light Mode** — tema bisa diganti
 - 📱 **PWA** — bisa di-*install* sebagai aplikasi di HP
 - 🎨 **Responsif & Mobile-First** — desain glassmorphism yang cantik
+- 🔒 **Security** — Helmet headers + Rate Limiting + Input Sanitization
+- ⏱️ **Timeout Handling** — fetch timeout di frontend (10s preview, 30s download)
 
 ---
 
@@ -42,6 +45,7 @@
 | **Runtime** | Node.js 20.x |
 | **Framework** | Express.js |
 | **HTTP Client** | Axios |
+| **Security** | Helmet, express-rate-limit |
 | **API** | RapidAPI (`youtube-mp36`, `tiktok-video-downloader-api`, `soundcloud-scraper1`) |
 | **SoundCloud Engine** | [soundcloud-downloader](https://www.npmjs.com/package/soundcloud-downloader) |
 | **Frontend** | HTML + CSS + JavaScript (vanilla, single file) |
@@ -67,7 +71,14 @@ npm install
 ### 3. Konfigurasi Environment
 Buat file `.env` di folder project:
 ```env
+# API Key RapidAPI (WAJIB)
 RAPIDAPI_KEY=isi_api_key_kamu_disini
+
+# CORS Configuration (OPSIONAL)
+# Pisahkan dengan koma jika multiple origins
+# Contoh: https://example.com,https://app.example.com
+# Jika tidak diset, allow semua (development mode)
+ALLOWED_ORIGINS=
 ```
 
 ### 4. Jalankan
@@ -88,6 +99,7 @@ Buka **http://localhost:3000** di browser. 🎉
 4. Tambah **Environment Variable**:
    ```env
    RAPIDAPI_KEY=isi_api_key_kamu_disini
+   ALLOWED_ORIGINS=https://domain-kamu.com
    ```
 5. **Create Web Service** → tunggu status **Live** → situs online!
 
@@ -101,7 +113,7 @@ Buka **http://localhost:3000** di browser. 🎉
 Web-downloader-apikey/
 ├── server.js            # Server utama (Express + semua route API)
 ├── package.json         # Konfigurasi & dependency
-├── .env                 # API key (JANGAN di-commit)
+├── .env                 # API key & config (JANGAN di-commit)
 ├── .gitignore           # Node modules, log, .env
 └── public/
     ├── index.html       # Frontend lengkap (tab, preview, history)
@@ -122,12 +134,19 @@ Web-downloader-apikey/
 | `GET` | `/api/download/soundcloud/info?url=<link>` | Info lagu + artwork untuk preview |
 | `GET` | `/api/stats` | Jumlah unduhan hari ini |
 
+### Rate Limiting
+| Endpoint | Batas | Window |
+|---|---|---|
+| API (search, info, stats) | 30 request | per menit |
+| Download (youtube, tiktok, soundcloud) | 10 request | per menit |
+
 ---
 
 ## 📜 Riwayat Perubahan
 
 | Versi | Fitur |
 |---|---|
+| **v3.1.0** | 🔒 Security: Helmet, Rate Limiting, Input Sanitization, CORS Config ⚙️ Frontend: Loading state, fetch timeout, favicon |
 | **v3.0** | 🎧 Tab SoundCloud (cari + link pendek) |
 | **v2.x** | 🖼️ Preview thumbnail otomatis, AI Title Cleaner, PWA |
 | **v1.0** | 🎵 YouTube MP3 + 🎬 TikTok Video |

@@ -2,600 +2,705 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FACHRI DEV Downloader - Ultimate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FD Downloader</title>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#4f46e5">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#0f0f1a">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236366f1'/><text x='50' y='68' font-size='50' font-weight='bold' text-anchor='middle' fill='white'>FD</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Tema Gelap Premium (Default) */
-            --bg: #0a0a0f;
-            --bg-blob-1: rgba(99, 102, 241, 0.10);
-            --bg-blob-2: rgba(139, 92, 246, 0.08);
-            --card-bg: rgba(255, 255, 255, 0.045);
-            --card-border: 1px solid rgba(255, 255, 255, 0.09);
-            --text: #f5f5f7;
-            --text-muted: #a1a1aa;
+            --bg: #0f0f1a;
+            --card: rgba(255,255,255,0.04);
+            --card-border: rgba(255,255,255,0.08);
+            --text: #f0f0f5;
+            --muted: #71717a;
             --primary: #6366f1;
-            --secondary: #8b5cf6;
-            --accent-grad: linear-gradient(135deg, #6366f1, #8b5cf6);
-            --input-bg: rgba(255, 255, 255, 0.06);
-            --input-border: 1px solid rgba(255, 255, 255, 0.10);
-            --history-bg: rgba(255, 255, 255, 0.03);
-            --shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-            --ring: rgba(99, 102, 241, 0.35);
+            --primary-glow: rgba(99,102,241,0.25);
+            --grad: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --input: rgba(255,255,255,0.06);
+            --input-border: rgba(255,255,255,0.1);
+            --radius: 14px;
         }
-        body.light-mode {
-            /* Tema Terang Premium */
+        body.light {
             --bg: #f5f5f7;
-            --bg-blob-1: rgba(99, 102, 241, 0.12);
-            --bg-blob-2: rgba(139, 92, 246, 0.10);
-            --card-bg: rgba(255, 255, 255, 0.92);
-            --card-border: 1px solid rgba(0, 0, 0, 0.05);
-            --text: #1d1d1f;
-            --text-muted: #6e6e73;
+            --card: rgba(255,255,255,0.85);
+            --card-border: rgba(0,0,0,0.06);
+            --text: #18181b;
+            --muted: #71717a;
             --primary: #4f46e5;
-            --secondary: #7c3aed;
-            --input-bg: rgba(0, 0, 0, 0.04);
-            --input-border: 1px solid rgba(0, 0, 0, 0.08);
-            --history-bg: rgba(0, 0, 0, 0.02);
-            --shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
-            --ring: rgba(79, 70, 229, 0.25);
+            --primary-glow: rgba(79,70,229,0.15);
+            --input: rgba(0,0,0,0.04);
+            --input-border: rgba(0,0,0,0.08);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
-        html { -webkit-tap-highlight-color: transparent; }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: var(--bg); color: var(--text); min-height: 100vh;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 24px; overflow-x: hidden; position: relative;
-            transition: background 0.4s ease, color 0.3s ease;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            overflow: hidden;
+            position: relative;
         }
-        /* Blob lembut di belakang (premium, tidak ramai) */
+
         body::before, body::after {
-            content: ''; position: fixed; border-radius: 50%; filter: blur(90px); z-index: 0; pointer-events: none;
-            transition: opacity 0.4s ease;
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: 0;
         }
-        body::before { width: 420px; height: 420px; background: var(--bg-blob-1); top: -120px; left: -100px; }
-        body::after { width: 380px; height: 380px; background: var(--bg-blob-2); bottom: -120px; right: -100px; }
+        body::before { width: 350px; height: 350px; background: rgba(99,102,241,0.08); top: -100px; left: -80px; }
+        body::after { width: 300px; height: 300px; background: rgba(139,92,246,0.06); bottom: -100px; right: -80px; }
 
-        .container {
-            background: var(--card-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-            border-radius: 28px; padding: 44px 32px; width: 100%; max-width: 480px;
-            box-shadow: var(--shadow); border: var(--card-border); text-align: center;
-            position: relative; overflow: hidden; z-index: 1;
-            animation: cardIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px 20px;
+            position: relative;
+            z-index: 1;
+            animation: fadeIn .4s ease;
         }
-        @keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
-        /* Theme Toggle Button */
-        .theme-toggle {
-            position: absolute; top: 18px; right: 18px; background: var(--input-bg); border: var(--input-border);
-            color: var(--text); width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 10;
-            transition: transform 0.25s ease, background 0.3s ease, border-color 0.3s ease;
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
         }
-        .theme-toggle:hover { transform: scale(1.08); border-color: var(--primary); }
-
-        /* Jam Digital Premium */
-        .clock {
-            font-size: 42px; font-weight: 300; letter-spacing: 0.04em; line-height: 1;
-            color: #b8b2d9; text-align: center; margin: 6px auto 18px;
-            text-shadow: 0 0 18px rgba(139, 92, 246, 0.45), 0 0 40px rgba(99, 102, 241, 0.20);
-            font-variant-numeric: tabular-nums; animation: clockIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        body.light-mode .clock {
-            color: #6b5fa8;
-            text-shadow: 0 0 18px rgba(139, 92, 246, 0.30), 0 0 40px rgba(99, 102, 241, 0.15);
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--grad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 13px;
+            color: #fff;
         }
-        @keyframes clockIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-        .clock .clock-sec { font-size: 18px; font-weight: 400; color: rgba(184, 178, 217, 0.55); margin-left: 2px; vertical-align: super; }
-        body.light-mode .clock .clock-sec { color: rgba(107, 95, 168, 0.55); }
-
-        .profile-pic {
-            width: 64px; height: 64px; border-radius: 20px; background: var(--accent-grad);
-            margin: 0 auto 18px; display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 20px; color: white; letter-spacing: 0.5px;
-            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.30);
-            animation: float 5s ease-in-out infinite;
+        .brand-text h1 {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-
-        h1 {
-            font-size: 22px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em;
-            background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .brand-text span {
+            font-size: 10px;
+            color: var(--muted);
         }
-        .subtitle { color: var(--text-muted); font-size: 13px; font-weight: 400; margin-bottom: 18px; }
-        .stats {
-            font-size: 12px; color: var(--text); margin-bottom: 26px; font-weight: 600;
-            background: var(--input-bg); border: var(--input-border);
-            display: inline-block; padding: 6px 14px; border-radius: 999px;
+        .theme-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--input-border);
+            background: var(--input);
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
         }
-        .stats span { color: var(--primary); }
 
         .tabs {
-            display: flex; gap: 4px; margin-bottom: 22px; background: var(--input-bg);
-            border: var(--input-border); padding: 4px; border-radius: 14px;
+            display: flex;
+            gap: 4px;
+            background: var(--input);
+            border: 1px solid var(--input-border);
+            padding: 3px;
+            border-radius: 10px;
+            margin-bottom: 14px;
         }
-        .tab-btn {
-            flex: 1; padding: 11px 8px; border: none; border-radius: 10px; background: transparent;
-            color: var(--text-muted); cursor: pointer; font-weight: 600; font-size: 12.5px;
-            transition: all 0.3s ease;
+        .tab {
+            flex: 1;
+            padding: 8px 4px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: inherit;
         }
-        .tab-btn:hover { color: var(--text); }
-        .tab-btn.active {
-            background: var(--accent-grad); color: white;
-            box-shadow: 0 6px 18px rgba(99, 102, 241, 0.30);
+        .tab.on {
+            background: var(--grad);
+            color: #fff;
+            box-shadow: 0 4px 12px var(--primary-glow);
         }
 
-        .input-group { margin-bottom: 18px; text-align: left; }
-        label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; margin-left: 4px; font-weight: 600; letter-spacing: 0.02em; }
-        .input-wrapper { position: relative; display: flex; align-items: center; }
-        input[type="text"] {
-            width: 100%; padding: 15px 52px 15px 16px; border-radius: 14px; border: var(--input-border);
-            background: var(--input-bg); color: var(--text); outline: none; font-size: 13px;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        .input-wrap {
+            position: relative;
+            margin-bottom: 10px;
         }
-        input[type="text"]:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--ring); }
-        input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
+        .input-wrap input {
+            width: 100%;
+            padding: 12px 70px 12px 14px;
+            border-radius: var(--radius);
+            border: 1px solid var(--input-border);
+            background: var(--input);
+            color: var(--text);
+            font-size: 13px;
+            outline: none;
+            font-family: inherit;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .input-wrap input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+        .input-wrap input::placeholder { color: var(--muted); opacity: .6; }
         .btn-paste {
-            position: absolute; right: 8px; background: var(--input-bg); border: var(--input-border);
-            color: var(--text); padding: 8px 11px; border-radius: 9px; font-size: 11px; cursor: pointer;
-            transition: all 0.25s ease;
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--input-border);
+            background: var(--input);
+            color: var(--muted);
+            font-size: 11px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 500;
         }
-        .btn-paste:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-paste:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-        .btn-download {
-            width: 100%; padding: 16px; border: none; border-radius: 14px; background: var(--accent-grad);
-            color: white; font-size: 15px; font-weight: 700; cursor: pointer; letter-spacing: 0.01em;
-            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.32); position: relative; overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+        .btn-go {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius);
+            background: var(--grad);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform .15s, box-shadow .2s;
+            box-shadow: 0 6px 20px var(--primary-glow);
         }
-        .btn-download:hover { transform: translateY(-1px); box-shadow: 0 16px 38px rgba(99, 102, 241, 0.42); }
-        .btn-download:active { transform: scale(0.97); }
-        .btn-download:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .btn-go:hover { transform: translateY(-1px); box-shadow: 0 10px 28px var(--primary-glow); }
+        .btn-go:active { transform: scale(.97); }
+        .btn-go:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
-        .progress-container {
-            width: 100%; height: 6px; background: var(--input-bg); border-radius: 10px;
-            margin-top: 16px; overflow: hidden; display: none;
+        .progress {
+            height: 4px;
+            background: var(--input);
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+            display: none;
         }
         .progress-bar {
-            height: 100%; width: 0%; background: var(--accent-grad); border-radius: 10px;
-            transition: width 0.4s ease; position: relative;
+            height: 100%;
+            width: 0%;
+            background: var(--grad);
+            border-radius: 4px;
+            transition: width .3s;
         }
-        .progress-bar::after {
-            content: ''; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transform: translateX(-100%); animation: shimmer 1.4s infinite;
+        .progress-text {
+            font-size: 10px;
+            color: var(--primary);
+            margin-top: 6px;
+            display: none;
+            font-weight: 500;
+            text-align: center;
         }
-        @keyframes shimmer { 100% { transform: translateX(100%); } }
-        .progress-text { font-size: 11px; color: var(--primary); margin-top: 8px; display: none; font-weight: 600; }
 
-        .result-area {
-            margin-top: 20px; padding: 16px; background: var(--history-bg); border-radius: 16px;
-            border: var(--card-border); display: none; text-align: left;
-            animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        .error {
+            font-size: 11px;
+            color: #f43f5e;
+            background: rgba(244,63,94,0.08);
+            border: 1px solid rgba(244,63,94,0.15);
+            padding: 8px 12px;
+            border-radius: 10px;
+            margin-top: 8px;
+            display: none;
+            font-weight: 500;
         }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .result-info { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
-        .result-thumb {
-            width: 84px; height: 84px; border-radius: 12px; object-fit: cover;
-            background: var(--input-bg); border: var(--input-border);
+
+        .preview {
+            display: none;
+            margin-top: 10px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--input-border);
+            position: relative;
+            animation: fadeIn .3s ease;
         }
-        .result-title { font-size: 13px; font-weight: 600; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .preview img {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            display: block;
+            background: var(--input);
+        }
+        .preview .badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0,0,0,.6);
+            backdrop-filter: blur(6px);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 99px;
+        }
+        .preview .badge.ok { background: var(--grad); }
+        .preview .hint {
+            font-size: 10px;
+            color: var(--muted);
+            padding: 6px 10px;
+        }
+
+        .result {
+            display: none;
+            margin-top: 10px;
+            padding: 12px;
+            background: var(--input);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+            animation: fadeIn .3s ease;
+        }
+        .result-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .result-row img {
+            width: 56px;
+            height: 56px;
+            border-radius: 10px;
+            object-fit: cover;
+            background: var(--input);
+            border: 1px solid var(--input-border);
+        }
+        .result-row .info { flex: 1; min-width: 0; }
+        .result-row .label { font-size: 9px; color: var(--muted); letter-spacing: .04em; margin-bottom: 2px; }
+        .result-row .title {
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
         .btn-save {
-            display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
-            padding: 13px; background: var(--accent-grad); color: white; text-decoration: none;
-            border-radius: 12px; font-weight: 700; font-size: 13px; transition: transform 0.2s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            padding: 10px;
+            background: var(--grad);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            transition: transform .15s;
+            font-family: inherit;
         }
-        .btn-save:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(99, 102, 241, 0.35); }
+        .btn-save:hover { transform: translateY(-1px); }
 
-        /* Hasil Pencarian SoundCloud */
-        .sc-results { margin-top: 20px; display: none; flex-direction: column; gap: 10px; }
-        .sc-result {
-            display: flex; gap: 10px; align-items: center; background: var(--history-bg);
-            border: var(--card-border); border-radius: 14px; padding: 10px;
-            animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        .sc-list {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 10px;
+            max-height: 180px;
+            overflow-y: auto;
         }
-        .sc-result img { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; background: var(--input-bg); }
-        .sc-result .sc-info { flex: 1; min-width: 0; }
-        .sc-result .sc-title { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sc-result .sc-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
-        .sc-result button {
-            background: var(--accent-grad); border: none; color: white; padding: 9px 12px;
-            border-radius: 9px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;
-            transition: transform 0.2s ease;
+        .sc-item {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 8px;
+            background: var(--input);
+            border: 1px solid var(--input-border);
+            border-radius: 10px;
+            animation: fadeIn .3s ease;
         }
-        .sc-result button:hover { transform: scale(1.05); }
-
-        /* Preview Thumbnail */
-        .preview-area { margin-top: 15px; display: none; animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-        .preview-thumb-wrap { position: relative; border-radius: 16px; overflow: hidden; border: var(--card-border); }
-        .preview-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: var(--input-bg); }
-        .preview-badge {
-            position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
-            color: white; font-size: 10px; font-weight: 700; padding: 5px 12px; border-radius: 999px; letter-spacing: 0.02em;
-        }
-        .preview-badge.ready { background: var(--accent-grad); }
-        .preview-hint { font-size: 10.5px; color: var(--text-muted); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
-
-        /* History Section */
-        .history-section { margin-top: 24px; text-align: left; display: none; }
-        .history-title { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
-        .clear-history { background: none; border: none; color: #f43f5e; font-size: 10px; font-weight: 600; cursor: pointer; }
-        .clear-history:hover { text-decoration: underline; }
-        .history-list { list-style: none; max-height: 150px; overflow-y: auto; }
-        .history-item {
-            background: var(--input-bg); padding: 10px 12px; border-radius: 10px; margin-bottom: 8px;
-            font-size: 11px; display: flex; justify-content: space-between; align-items: center; border: var(--input-border);
-        }
-        .history-item a { color: var(--primary); text-decoration: none; font-weight: 700; }
-
-        .footer-watermark { margin-top: 26px; font-size: 10px; color: var(--text-muted); opacity: 0.6; font-weight: 400; }
-        .error-msg {
-            color: #f43f5e; font-size: 11px; margin-top: 12px; display: none;
-            background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.18);
-            padding: 10px 12px; border-radius: 12px; font-weight: 500;
+        .sc-item img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: var(--input); }
+        .sc-item .sc-info { flex: 1; min-width: 0; }
+        .sc-item .sc-title { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sc-item .sc-sub { font-size: 9px; color: var(--muted); margin-top: 1px; }
+        .sc-item button {
+            background: var(--grad);
+            border: none;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+            font-family: inherit;
         }
 
-        /* PWA Install Prompt */
+        .footer {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 10px;
+            color: var(--muted);
+            opacity: .5;
+        }
+
         #installPrompt {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: var(--card-bg); backdrop-filter: blur(16px); border: var(--card-border);
-            padding: 14px 18px; border-radius: 14px; box-shadow: var(--shadow);
-            display: none; align-items: center; gap: 14px; z-index: 100; animation: slideUp 0.5s ease;
+            position: fixed;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            padding: 10px 14px;
+            border-radius: 12px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 100;
+            font-size: 12px;
+            font-weight: 600;
+            animation: fadeIn .3s ease;
         }
         #installPrompt button {
-            background: var(--accent-grad); color: white; border: none; padding: 8px 15px;
-            border-radius: 9px; font-weight: 700; cursor: pointer;
+            background: var(--grad);
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: inherit;
+        }
+        #installPrompt .close {
+            background: transparent;
+            color: var(--muted);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0 4px;
         }
     </style>
 </head>
 <body>
 
-    <!-- PWA Install Banner -->
-    <div id="installPrompt">
-        <span style="font-size: 13px; font-weight: 600;">📱 Install Aplikasi FD?</span>
-        <button id="btnInstall">Install</button>
-        <button onclick="document.getElementById('installPrompt').style.display='none'" style="background:transparent; color:var(--text-muted); border:none; cursor:pointer;">✕</button>
+<div id="installPrompt">
+    <span>Install FD App?</span>
+    <button id="btnInstall">Install</button>
+    <button class="close" onclick="this.parentElement.style.display='none'">&times;</button>
+</div>
+
+<div class="card">
+    <div class="top-bar">
+        <div class="brand">
+            <div class="brand-icon">FD</div>
+            <div class="brand-text">
+                <h1>Media Downloader</h1>
+                <span>YouTube &middot; TikTok &middot; SoundCloud</span>
+            </div>
+        </div>
+        <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
     </div>
 
-    <div class="container">
-        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
-        <div class="clock" id="clock" aria-label="Jam digital">--:--<span class="clock-sec"></span></div>
-        <div class="profile-pic">FD</div>
-        <h1>Media Downloader</h1>
-        <p class="subtitle">Enterprise High-Speed Media Downloader</p>
-        <p class="stats">🔥 Unduhan Hari Ini: <span id="dailyCount">0</span></p>
-
-        <div class="tabs">
-            <button class="tab-btn active" id="tabYt" onclick="switchTab('youtube')">YouTube MP3</button>
-            <button class="tab-btn" id="tabTt" onclick="switchTab('tiktok')">TikTok Video</button>
-            <button class="tab-btn" id="tabSc" onclick="switchTab('soundcloud')">SoundCloud</button>
-        </div>
-
-        <div class="input-group">
-            <label id="inputLabel">Tempel Link (Auto-Detect Aktif):</label>
-            <div class="input-wrapper">
-                <input type="text" id="urlInput" placeholder="Paste link YouTube atau TikTok di sini..." oninput="autoDetect(this.value)">
-                <button class="btn-paste" onclick="pasteClipboard()">📋 Paste</button>
-            </div>
-        </div>
-
-        <!-- Preview Thumbnail Otomatis -->
-        <div class="preview-area" id="previewArea">
-            <div class="preview-thumb-wrap">
-                <img src="" alt="Preview" class="preview-thumb" id="previewThumb">
-                <span class="preview-badge" id="previewBadge">YouTube</span>
-            </div>
-            <div class="preview-hint" id="previewHint">🖼️ Preview thumbnail muncul otomatis saat link YouTube ditempel</div>
-        </div>
-
-        <button class="btn-download" id="actionBtn" onclick="processDownload()">🚀 Unduh Sekarang</button>
-
-        <div class="progress-container" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
-        <div class="progress-text" id="progressText">Menghubungkan ke server...</div>
-        <div class="error-msg" id="errorMsg"></div>
-
-        <div class="result-area" id="resultArea">
-            <div class="result-info">
-                <img src="" alt="Thumb" class="result-thumb" id="resThumb">
-                <div><div style="font-size: 9px; color: var(--text-muted); margin-bottom: 2px; letter-spacing: 0.04em;">JUDUL BERSIH (AI):</div><div class="result-title" id="resTitle">-</div></div>
-            </div>
-            <a href="#" class="btn-save" id="resLink" target="_blank">⬇ Simpan ke Perangkat</a>
-        </div>
-
-        <!-- Hasil Pencarian SoundCloud -->
-        <div class="sc-results" id="scResults"></div>
-
-        <!-- Riwayat Download -->
-        <div class="history-section" id="historySection">
-            <div class="history-title">📜 Riwayat Terbaru <button class="clear-history" onclick="clearHistory()">Hapus</button></div>
-            <ul class="history-list" id="historyList"></ul>
-        </div>
-
-        <div class="footer-watermark">Made with ❤️ by FACHRI DEV | v3.1 Premium</div>
+    <div class="tabs">
+        <button class="tab on" id="tabYt" onclick="switchTab('youtube')">YouTube</button>
+        <button class="tab" id="tabTt" onclick="switchTab('tiktok')">TikTok</button>
+        <button class="tab" id="tabSc" onclick="switchTab('soundcloud')">SoundCloud</button>
     </div>
 
-    <script>
-        let currentMode = 'youtube';
+    <div class="input-wrap">
+        <input type="text" id="urlInput" placeholder="Paste link atau ketik judul..." oninput="autoDetect(this.value)">
+        <button class="btn-paste" onclick="pasteClipboard()">Paste</button>
+    </div>
 
-        // --- 0. JAM DIGITAL REAL-TIME ---
-        function updateClock() {
-            const now = new Date();
-            const hh = String(now.getHours()).padStart(2, '0');
-            const mm = String(now.getMinutes()).padStart(2, '0');
-            const ss = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('clock').childNodes[0].nodeValue = `${hh}:${mm}`;
-            document.getElementById('clock').querySelector('.clock-sec').textContent = ss;
-        }
-        updateClock();
-        setInterval(updateClock, 1000); // Update tiap detik
+    <button class="btn-go" id="actionBtn" onclick="processDownload()">Download</button>
 
-        // --- 1. DARK/LIGHT MODE ---
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-            const isLight = document.body.classList.contains('light-mode');
-            localStorage.setItem('fd_theme', isLight ? 'light' : 'dark');
-            document.getElementById('themeToggle').innerText = isLight ? '☀️' : '🌙';
-        }
-        // Load theme on start
-        if (localStorage.getItem('fd_theme') === 'light') {
-            document.body.classList.add('light-mode');
-            document.getElementById('themeToggle').innerText = '☀️';
-        }
+    <div class="progress" id="progressBox"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-text" id="progressText"></div>
+    <div class="error" id="errorMsg"></div>
 
-        // --- 2. AUTO-DETECT LINK + PREVIEW THUMBNAIL ---
-        function extractYouTubeId(url) {
-            const m = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/) || url.match(/^([a-zA-Z0-9_-]{11})$/);
-            return m ? m[1] : null;
-        }
-        function showYouTubePreview(url) {
-            const id = extractYouTubeId(url);
-            const area = document.getElementById('previewArea');
-            if (!id) { area.style.display = 'none'; return; }
-            document.getElementById('previewThumb').src = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
-            document.getElementById('previewBadge').textContent = '🟥 YouTube Terdeteksi';
-            document.getElementById('previewBadge').classList.add('ready');
-            document.getElementById('previewHint').innerHTML = '🖼️ Preview ditemukan · thumbnail diambil langsung dari YouTube (gratis, tanpa kuota API)';
-            area.style.display = 'block';
-        }
-        function hidePreview() {
-            document.getElementById('previewArea').style.display = 'none';
-        }
+    <div class="preview" id="previewArea">
+        <img src="" alt="" id="previewThumb">
+        <span class="badge" id="previewBadge"></span>
+        <div class="hint" id="previewHint"></div>
+    </div>
 
-        async function showSoundcloudPreview(url) {
-            const area = document.getElementById('previewArea');
-            area.style.display = 'none';
-            try {
-                const res = await fetch(`/api/download/soundcloud/info?url=${encodeURIComponent(url)}`);
-                const data = await res.json();
-                if (!data.success) return;
-                document.getElementById('previewThumb').src = data.thumb || 'https://via.placeholder.com/300/333/fff?text=SC';
-                document.getElementById('previewBadge').textContent = '🎵 SoundCloud Terdeteksi';
-                document.getElementById('previewBadge').classList.add('ready');
-                document.getElementById('previewHint').innerHTML = `🎵 <b>${data.title}</b> · siap diunduh dalam format MP3`;
-                area.style.display = 'block';
-            } catch (e) { area.style.display = 'none'; }
-        }
-        function autoDetect(url) {
-            if (!url) { hidePreview(); return; }
-            if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                if (currentMode !== 'youtube') switchTab('youtube');
-                showYouTubePreview(url);
-            } else if (url.includes('tiktok.com')) {
-                if (currentMode !== 'tiktok') switchTab('tiktok');
-                hidePreview();
-            } else if (url.includes('soundcloud.com')) {
-                if (currentMode !== 'soundcloud') switchTab('soundcloud');
-                showSoundcloudPreview(url);
-            } else {
-                hidePreview();
-            }
-        }
+    <div class="result" id="resultArea">
+        <div class="result-row">
+            <img src="" alt="" id="resThumb">
+            <div class="info">
+                <div class="label">HASIL</div>
+                <div class="title" id="resTitle">-</div>
+            </div>
+        </div>
+        <a href="#" class="btn-save" id="resLink" target="_blank">Download File</a>
+    </div>
 
-        function switchTab(mode) {
-            currentMode = mode;
-            document.getElementById('tabYt').classList.toggle('active', mode === 'youtube');
-            document.getElementById('tabTt').classList.toggle('active', mode === 'tiktok');
-            document.getElementById('tabSc').classList.toggle('active', mode === 'soundcloud');
-            document.getElementById('resultArea').style.display = 'none';
-            document.getElementById('scResults').style.display = 'none';
-            document.getElementById('errorMsg').style.display = 'none';
-            hidePreview();
-            document.getElementById('inputLabel').innerText = mode === 'soundcloud' ? 'Tempel Link SoundCloud ATAU Ketik Kata Kunci:' : 'Tempel Link (Auto-Detect Aktif):';
-            document.getElementById('urlInput').placeholder = mode === 'soundcloud' ? 'Contoh: https://soundcloud.com/... atau ketik judul lagu...' : 'Paste link YouTube atau TikTok di sini...';
-        }
+    <div class="sc-list" id="scResults"></div>
 
-        async function pasteClipboard() {
-            try {
-                const text = await navigator.clipboard.readText();
-                document.getElementById('urlInput').value = text;
-                autoDetect(text); // Trigger auto detect saat paste
-            } catch (err) { alert("Gagal akses clipboard. Paste manual (Ctrl+V)."); }
-        }
+    <div class="footer">FACHRI DEV &middot; v3.1.0</div>
+</div>
 
-        // --- 3. STATISTIK HARIAN ---
-        async function fetchStats() {
-            try {
-                const res = await fetch('/api/stats');
-                const data = await res.json();
-                document.getElementById('dailyCount').innerText = data.todayDownloads;
-            } catch(e) {}
-        }
-        setInterval(fetchStats, 5000); // Update tiap 5 detik
-        fetchStats();
+<script>
+let currentMode = 'youtube';
 
-        // --- 4. RIWAYAT DOWNLOAD (LOCALSTORAGE) ---
-        function saveToHistory(title, link, type) {
-            let history = JSON.parse(localStorage.getItem('fd_history') || '[]');
-            history.unshift({ title, link, type, time: new Date().toLocaleTimeString() });
-            if (history.length > 5) history.pop(); // Maksimal 5
-            localStorage.setItem('fd_history', JSON.stringify(history));
-            renderHistory();
-        }
-        function renderHistory() {
-            const history = JSON.parse(localStorage.getItem('fd_history') || '[]');
-            const list = document.getElementById('historyList');
-            const section = document.getElementById('historySection');
-            list.innerHTML = '';
-            if (history.length === 0) { section.style.display = 'none'; return; }
-            section.style.display = 'block';
-            history.forEach(item => {
-                list.innerHTML += `<li class="history-item"><span>[${item.time}] ${item.title.substring(0,25)}...</span> <a href="${item.link}" target="_blank">⬇</a></li>`;
-            });
-        }
-        function clearHistory() { localStorage.removeItem('fd_history'); renderHistory(); }
-        renderHistory(); // Load on start
+function toggleTheme() {
+    document.body.classList.toggle('light');
+    const isLight = document.body.classList.contains('light');
+    localStorage.setItem('fd_theme', isLight ? 'light' : 'dark');
+    document.getElementById('themeBtn').innerText = isLight ? '☀️' : '🌙';
+}
+if (localStorage.getItem('fd_theme') === 'light') {
+    document.body.classList.add('light');
+    document.getElementById('themeBtn').innerText = '☀️';
+}
 
-        // --- PROGRESS BAR ---
-        function simulateProgress() {
-            const container = document.getElementById('progressContainer'); const bar = document.getElementById('progressBar'); const text = document.getElementById('progressText');
-            container.style.display = 'block'; text.style.display = 'block'; bar.style.width = '0%';
-            let width = 0; const stages = ["Menganalisis link...", "AI Membersihkan Judul...", "Mengekstrak media...", "Hampir selesai..."]; let stageIdx = 0;
-            const interval = setInterval(() => {
-                if (width >= 90) { clearInterval(interval); return; }
-                width += Math.random() * 15; if(width > 90) width = 90; bar.style.width = width + '%';
-                if(width > 25 && stageIdx === 0) { text.innerText = stages[1]; stageIdx++; }
-                if(width > 55 && stageIdx === 1) { text.innerText = stages[2]; stageIdx++; }
-                if(width > 80 && stageIdx === 2) { text.innerText = stages[3]; stageIdx++; }
-            }, 300);
-            window.currentProgressInterval = interval;
-        }
-        function finishProgress(success) {
-            clearInterval(window.currentProgressInterval); const bar = document.getElementById('progressBar'); const text = document.getElementById('progressText'); const container = document.getElementById('progressContainer');
-            bar.style.width = '100%'; text.innerText = success ? "✅ Berhasil!" : "❌ Gagal.";
-            setTimeout(() => { container.style.display = 'none'; text.style.display = 'none'; bar.style.width = '0%'; }, 1500);
-        }
+function extractYouTubeId(url) {
+    const m = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/) || url.match(/^([a-zA-Z0-9_-]{11})$/);
+    return m ? m[1] : null;
+}
 
-        // --- 5. PROCESS DOWNLOAD (Dengan AI Cleaner & History) ---
-        async function processDownload() {
-            const url = document.getElementById('urlInput').value.trim();
-            const btn = document.getElementById('actionBtn'); const errorMsg = document.getElementById('errorMsg'); const resultArea = document.getElementById('resultArea');
-            if (!url) { showError("Link tidak boleh kosong, Murid!"); return; }
+function showYouTubePreview(url) {
+    const id = extractYouTubeId(url);
+    const area = document.getElementById('previewArea');
+    if (!id) { area.style.display = 'none'; return; }
+    document.getElementById('previewThumb').src = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+    const badge = document.getElementById('previewBadge');
+    badge.textContent = 'YouTube';
+    badge.classList.add('ok');
+    document.getElementById('previewHint').textContent = 'Thumbnail ditemukan';
+    area.style.display = 'block';
+}
 
-            btn.disabled = true; btn.innerText = "⏳ Memproses..."; errorMsg.style.display = 'none'; resultArea.style.display = 'none';
-            simulateProgress();
+function hidePreview() { document.getElementById('previewArea').style.display = 'none'; }
 
-            try {
-                const endpoint = currentMode === 'youtube' ? '/api/download/youtube' : '/api/download/tiktok';
+async function showSoundcloudPreview(url) {
+    const area = document.getElementById('previewArea');
+    const badge = document.getElementById('previewBadge');
+    const hint = document.getElementById('previewHint');
+    area.style.display = 'block';
+    document.getElementById('previewThumb').src = '';
+    badge.textContent = 'Memuat...';
+    badge.classList.remove('ok');
+    hint.textContent = 'Mengambil info dari SoundCloud...';
+    try {
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 10000);
+        const res = await fetch(`/api/download/soundcloud/info?url=${encodeURIComponent(url)}`, { signal: ctrl.signal });
+        clearTimeout(tid);
+        const data = await res.json();
+        if (!data.success) throw new Error();
+        document.getElementById('previewThumb').src = data.thumb || '';
+        badge.textContent = 'SoundCloud';
+        badge.classList.add('ok');
+        hint.textContent = data.title;
+    } catch (e) {
+        if (e.name === 'AbortError') { badge.textContent = 'Timeout'; hint.textContent = 'Gagal memuat.'; }
+        else area.style.display = 'none';
+    }
+}
 
-                if (currentMode === 'soundcloud') {
-                    if (url.includes('soundcloud.com')) {
-                        // Mode URL → stream MP3 langsung
-                        const streamLink = `/api/download/soundcloud?url=${encodeURIComponent(url)}`;
-                        document.getElementById('resTitle').innerText = "SoundCloud MP3 (Direct)";
-                        document.getElementById('resThumb').src = document.getElementById('previewThumb').src || 'https://via.placeholder.com/60/333/fff?text=SC';
-                        document.getElementById('resLink').href = streamLink;
-                        resultArea.style.display = 'block';
-                        saveToHistory("SoundCloud Track", streamLink, 'SoundCloud');
-                        window.location.href = streamLink;
-                    } else {
-                        // Mode pencarian → tampilkan daftar hasil
-                        const response = await fetch(`/api/download/soundcloud/search?q=${encodeURIComponent(url)}`);
-                        const data = await response.json();
-                        if (!response.ok) throw new Error(data.error || "Server error.");
-                        renderScResults(data.tracks);
-                        if (data.tracks.length === 0) throw new Error("Tidak ada hasil untuk pencarian itu.");
-                    }
-                } else if (currentMode === 'tiktok') {
-                    // Minta format JSON dulu biar bisa simpan ke history & dapat judul bersih
-                    const response = await fetch(`${endpoint}?url=${encodeURIComponent(url)}&format=json`);
-                    const contentType = response.headers.get("content-type");
+function autoDetect(url) {
+    if (!url) { hidePreview(); return; }
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        if (currentMode !== 'youtube') switchTab('youtube');
+        showYouTubePreview(url);
+    } else if (url.includes('tiktok.com')) {
+        if (currentMode !== 'tiktok') switchTab('tiktok');
+        hidePreview();
+    } else if (url.includes('soundcloud.com')) {
+        if (currentMode !== 'soundcloud') switchTab('soundcloud');
+        showSoundcloudPreview(url);
+    } else { hidePreview(); }
+}
 
-                    if (contentType && contentType.includes("application/json")) {
-                        const data = await response.json();
-                        if (!response.ok) throw new Error(data.error || "Server error.");
+function switchTab(mode) {
+    currentMode = mode;
+    document.getElementById('tabYt').classList.toggle('on', mode === 'youtube');
+    document.getElementById('tabTt').classList.toggle('on', mode === 'tiktok');
+    document.getElementById('tabSc').classList.toggle('on', mode === 'soundcloud');
+    document.getElementById('resultArea').style.display = 'none';
+    document.getElementById('scResults').style.display = 'none';
+    document.getElementById('errorMsg').style.display = 'none';
+    hidePreview();
+    const inp = document.getElementById('urlInput');
+    inp.placeholder = mode === 'soundcloud' ? 'Ketik judul lagu atau paste link...' : 'Paste link YouTube / TikTok...';
+}
 
-                        document.getElementById('resTitle').innerText = data.title;
-                        document.getElementById('resThumb').src = data.thumb || 'https://via.placeholder.com/60/333/fff?text=FD';
-                        // Link save tetap mengarah ke endpoint streaming langsung
-                        const streamLink = `${endpoint}?url=${encodeURIComponent(url)}`;
-                        document.getElementById('resLink').href = streamLink;
-                        resultArea.style.display = 'block';
+async function pasteClipboard() {
+    try {
+        const t = await navigator.clipboard.readText();
+        document.getElementById('urlInput').value = t;
+        autoDetect(t);
+    } catch (e) { alert('Gagal akses clipboard. Paste manual (Ctrl+V).'); }
+}
 
-                        saveToHistory(data.title, streamLink, 'TikTok');
-                    } else {
-                        // Fallback kalau server langsung stream
-                        const streamLink = `${endpoint}?url=${encodeURIComponent(url)}`;
-                        window.location.href = streamLink;
-                        document.getElementById('resTitle').innerText = "TikTok Video (Direct)";
-                        document.getElementById('resLink').href = streamLink;
-                        resultArea.style.display = 'block';
-                        saveToHistory("TikTok Video", streamLink, 'TikTok');
-                    }
-                } else {
-                    const response = await fetch(`${endpoint}?url=${encodeURIComponent(url)}`);
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.error || "Server error.");
+function simulateProgress() {
+    const box = document.getElementById('progressBox');
+    const bar = document.getElementById('progressBar');
+    const txt = document.getElementById('progressText');
+    box.style.display = 'block';
+    txt.style.display = 'block';
+    bar.style.width = '0%';
+    let w = 0;
+    const msgs = ['Menganalisis...', 'Mengekstrak...', 'Hampir selesai...'];
+    let mi = 0;
+    window._prog = setInterval(() => {
+        if (w >= 90) { clearInterval(window._prog); return; }
+        w += Math.random() * 15;
+        if (w > 90) w = 90;
+        bar.style.width = w + '%';
+        if (w > 30 && mi === 0) { txt.textContent = msgs[1]; mi++; }
+        if (w > 60 && mi === 1) { txt.textContent = msgs[2]; mi++; }
+    }, 300);
+}
 
-                    document.getElementById('resTitle').innerText = data.title;
-                    document.getElementById('resThumb').src = data.thumb || 'https://via.placeholder.com/60/333/fff?text=FD';
-                    document.getElementById('resLink').href = data.link;
-                    resultArea.style.display = 'block';
+function finishProgress(ok) {
+    clearInterval(window._prog);
+    const bar = document.getElementById('progressBar');
+    const txt = document.getElementById('progressText');
+    const box = document.getElementById('progressBox');
+    bar.style.width = '100%';
+    txt.textContent = ok ? 'Berhasil!' : 'Gagal.';
+    setTimeout(() => { box.style.display = 'none'; txt.style.display = 'none'; bar.style.width = '0%'; }, 1200);
+}
 
-                    saveToHistory(data.title, data.link, 'YouTube');
-                }
+function showError(msg) {
+    const e = document.getElementById('errorMsg');
+    e.textContent = msg;
+    e.style.display = 'block';
+}
 
-                fetchStats(); // Refresh angka statistik
+async function processDownload() {
+    const url = document.getElementById('urlInput').value.trim();
+    const btn = document.getElementById('actionBtn');
+    const err = document.getElementById('errorMsg');
+    const res = document.getElementById('resultArea');
+    if (!url) { showError('Link tidak boleh kosong!'); return; }
+    btn.disabled = true;
+    btn.textContent = 'Memproses...';
+    err.style.display = 'none';
+    res.style.display = 'none';
+    simulateProgress();
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 30000);
+    try {
+        const ep = currentMode === 'youtube' ? '/api/download/youtube' : '/api/download/tiktok';
+        if (currentMode === 'soundcloud') {
+            if (url.includes('soundcloud.com')) {
+                const link = `/api/download/soundcloud?url=${encodeURIComponent(url)}`;
+                document.getElementById('resTitle').textContent = 'SoundCloud MP3';
+                document.getElementById('resThumb').src = document.getElementById('previewThumb').src || '';
+                document.getElementById('resLink').href = link;
+                res.style.display = 'block';
                 finishProgress(true);
-            } catch (err) {
-                showError(err.message); finishProgress(false);
-            } finally {
-                btn.disabled = false; btn.innerText = "🚀 Unduh Sekarang";
+                window.location.href = link;
+            } else {
+                const r = await fetch(`/api/download/soundcloud/search?q=${encodeURIComponent(url)}`, { signal: ctrl.signal });
+                const d = await r.json();
+                if (!r.ok) throw new Error(d.error || 'Server error');
+                renderSc(d.tracks);
+                if (!d.tracks.length) throw new Error('Tidak ada hasil.');
+                finishProgress(true);
             }
+        } else if (currentMode === 'tiktok') {
+            const r = await fetch(`${ep}?url=${encodeURIComponent(url)}&format=json`, { signal: ctrl.signal });
+            const ct = r.headers.get('content-type');
+            if (ct && ct.includes('json')) {
+                const d = await r.json();
+                if (!r.ok) throw new Error(d.error || 'Server error');
+                document.getElementById('resTitle').textContent = d.title;
+                document.getElementById('resThumb').src = d.thumb || '';
+                const sl = `${ep}?url=${encodeURIComponent(url)}`;
+                document.getElementById('resLink').href = sl;
+                res.style.display = 'block';
+                finishProgress(true);
+            } else {
+                window.location.href = `${ep}?url=${encodeURIComponent(url)}`;
+                finishProgress(true);
+            }
+        } else {
+            const r = await fetch(`${ep}?url=${encodeURIComponent(url)}`, { signal: ctrl.signal });
+            const d = await r.json();
+            if (!r.ok) throw new Error(d.error || 'Server error');
+            document.getElementById('resTitle').textContent = d.title;
+            document.getElementById('resThumb').src = d.thumb || '';
+            document.getElementById('resLink').href = d.link;
+            res.style.display = 'block';
+            finishProgress(true);
         }
-        function showError(msg) { const errorMsg = document.getElementById('errorMsg'); errorMsg.innerText = "❌ " + msg; errorMsg.style.display = 'block'; }
+    } catch (e) {
+        showError(e.name === 'AbortError' ? 'Timeout. Coba lagi.' : e.message);
+        finishProgress(false);
+    } finally {
+        clearTimeout(tid);
+        btn.disabled = false;
+        btn.textContent = 'Download';
+    }
+}
 
-        // --- 5B. SOUNDCLOUD - HASIL PENCARIAN ---
-        function renderScResults(tracks) {
-            const container = document.getElementById('scResults');
-            container.innerHTML = '';
-            tracks.forEach(t => {
-                const mins = Math.floor(t.duration / 60000);
-                const secs = Math.floor((t.duration % 60000) / 1000);
-                const dur = t.duration ? `${mins}:${String(secs).padStart(2, '0')}` : '';
-                container.innerHTML += `
-                    <div class="sc-result">
-                        <img src="${t.thumb || 'https://via.placeholder.com/46/333/fff?text=SC'}" onerror="this.onerror=null;this.src='https://via.placeholder.com/46/333/fff?text=SC'">
-                        <div class="sc-info">
-                            <div class="sc-title">${t.title}</div>
-                            <div class="sc-sub">${dur ? '⏱ ' + dur + ' · ' : ''}SoundCloud</div>
-                        </div>
-                        <button onclick="downloadSc('${encodeURIComponent(t.permalink)}')">⬇ MP3</button>
-                    </div>`;
-            });
-            container.style.display = 'flex';
-        }
-        function downloadSc(permalink) {
-            const streamLink = '/api/download/soundcloud?url=' + permalink;
-            saveToHistory("SoundCloud Track", streamLink, 'SoundCloud');
-            window.location.href = streamLink;
-        }
+function renderSc(tracks) {
+    const c = document.getElementById('scResults');
+    c.innerHTML = '';
+    tracks.forEach(t => {
+        const m = Math.floor(t.duration / 60000);
+        const s = Math.floor((t.duration % 60000) / 1000);
+        const dur = t.duration ? `${m}:${String(s).padStart(2, '0')}` : '';
+        c.innerHTML += `<div class="sc-item">
+            <img src="${t.thumb || ''}" onerror="this.style.display='none'">
+            <div class="sc-info">
+                <div class="sc-title">${t.title}</div>
+                <div class="sc-sub">${dur ? dur + ' · ' : ''}SoundCloud</div>
+            </div>
+            <button onclick="dlSc('${encodeURIComponent(t.permalink)}')">MP3</button>
+        </div>`;
+    });
+    c.style.display = 'flex';
+}
 
-        // --- 6. PWA INSTALL PROMPT ---
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e;
-            document.getElementById('installPrompt').style.display = 'flex';
-        });
-        document.getElementById('btnInstall').addEventListener('click', async () => {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') document.getElementById('installPrompt').style.display = 'none';
-            deferredPrompt = null;
-        });
+function dlSc(p) {
+    const link = '/api/download/soundcloud?url=' + p;
+    window.location.href = link;
+}
 
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); });
-        }
-    </script>
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; document.getElementById('installPrompt').style.display = 'flex'; });
+document.getElementById('btnInstall').addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') document.getElementById('installPrompt').style.display = 'none';
+    deferredPrompt = null;
+});
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+</script>
 </body>
 </html>

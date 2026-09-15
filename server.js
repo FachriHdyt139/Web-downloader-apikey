@@ -2,12 +2,62 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// --- SECURITY: Helmet untuk security headers ---
+app.use(helmet({
+    contentSecurityPolicy: false, // Disable karena kita inline CSS/JS
+    crossOriginEmbedderPolicy: false
+}));
+
+// --- SECURITY: Rate Limiting ---
+const apiLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 menit
+    max: 30, // Maksimal 30 request per menit per IP
+    message: { error: "Terlalu banyak request. Silakan tunggu 1 menit." },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+const downloadLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 menit
+    max: 10, // Maksimal 10 download per menit per IP
+    message: { error: "Batas download tercapai. Silakan tunggu 1 menit." },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// --- SECURITY: CORS Configuration ---
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+    : null;
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (mobile apps, curl, etc)
+        if (!origin) return callback(null, true);
+        
+        // Jika tidak ada ALLOWED_ORIGINS yang diset, allow semua (development mode)
+        if (!allowedOrigins) return callback(null, true);
+        
+        // Cek apakah origin ada di whitelist
+        if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Origin tidak diizinkan oleh CORS'));
+        }
+    },
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    maxAge: 86400 // Preflight cache 24 jam
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.static('public'));
 
@@ -17,6 +67,26 @@ const YT_HOST = 'youtube-mp36.p.rapidapi.com';
 const TT_HOST = 'tiktok-video-downloader-api.p.rapidapi.com';
 const SC_HOST = 'soundcloud-scraper1.p.rapidapi.com';
 const soundcloud = require('soundcloud-downloader').default;
+
+// --- INPUT SANITIZATION ---
+function sanitizeInput(input) {
+    if (!input || typeof input !== 'string') return '';
+    return input
+        .replace(/[<>]/g, '') // Hapus karakter HTML
+        .replace(/javascript:/gi, '') // Hapus javascript:
+        .replace(/on\w+=/gi, '') // Hapus event handler
+        .trim()
+        .substring(0, 2048); // Batasi panjang URL
+}
+
+function isValidUrl(url) {
+    try {
+        const parsed = new URL(url);
+        return ['http:', 'https:'].includes(parsed.protocol);
+    } catch {
+        return false;
+    }
+}
 
 // --- SISTEM STATISTIK HARIAN (Reset tiap 24 jam) ---
 let dailyStats = { count: 0, date: new Date().toDateString() };
@@ -58,9 +128,10 @@ function extractYouTubeId(url) {
 }
 
 // --- ROUTE 1: YOUTUBE MP3 ---
-app.get('/api/download/youtube', async (req, res) => {
-    const videoUrl = req.query.url;
-    if (!videoUrl) return res.status(400).json({ error: "Link YouTube kosong!" });
+app.get('/api/download/youtube', downloadLimiter, async (req, res) => {
+    const videoUrl = sanitizeInput(req.query.url);
+    if (!videoUrl) return res.status(400).json({ error: "Link YouTube tidak boleh kosong." });
+    if (!isValidUrl(videoUrl)) return res.status(400).json({ error: "Format link YouTube tidak valid." });
     const videoId = extractYouTubeId(videoUrl);
     if (!videoId) return res.status(400).json({ error: "Format link YouTube tidak dikenali." });
 
@@ -78,7 +149,7 @@ app.get('/api/download/youtube', async (req, res) => {
         });
     } catch (error) {
         console.error("YT Error:", error.response?.data || error.message);
-        res.status(500).json({ error: "Gagal fetch YouTube. Cek API Key/Quota di Render." });
+        res.status(500).json({ error: "Gagal memproses video YouTube. Silakan coba lagi." });
     }
 });
 
@@ -94,9 +165,10 @@ async function resolveTikTokUrl(shortUrl) {
 }
 
 // --- ROUTE 2: TIKTOK VIDEO (HYBRID STREAMING + AI CLEANER) ---
-app.get('/api/download/tiktok', async (req, res) => {
-    let videoUrl = req.query.url;
-    if (!videoUrl) return res.status(400).json({ error: "Link TikTok kosong!" });
+app.get('/api/download/tiktok', downloadLimiter, async (req, res) => {
+    let videoUrl = sanitizeInput(req.query.url);
+    if (!videoUrl) return res.status(400).json({ error: "Link TikTok tidak boleh kosong." });
+    if (!isValidUrl(videoUrl)) return res.status(400).json({ error: "Format link TikTok tidak valid." });
 
     // METODE 1: API RAPIDAPI + STREAMING
     try {
@@ -183,9 +255,9 @@ async function resolveSoundcloudUrl(url) {
 }
 
 // --- ROUTE 3A: SOUNDCLOUD - PENCARIAN (via RapidAPI) ---
-app.get('/api/download/soundcloud/search', async (req, res) => {
-    const query = (req.query.q || '').trim();
-    if (!query) return res.status(400).json({ error: "Kata kunci pencarian kosong!" });
+app.get('/api/download/soundcloud/search', apiLimiter, async (req, res) => {
+    const query = sanitizeInput(req.query.q || '').trim();
+    if (!query) return res.status(400).json({ error: "Kata kunci pencarian tidak boleh kosong." });
     try {
         const response = await axios.get(`https://${SC_HOST}/api/tracks/search`, {
             params: { query },
@@ -202,13 +274,13 @@ app.get('/api/download/soundcloud/search', async (req, res) => {
         res.json({ success: true, tracks });
     } catch (error) {
         console.error("SC Search Error:", error.response?.data || error.message);
-        res.status(500).json({ error: "Gagal mencari di SoundCloud. Cek API Key/Quota." });
+        res.status(500).json({ error: "Gagal mencari di SoundCloud. Silakan coba lagi." });
     }
 });
 
 // --- ROUTE 3B: SOUNDCLOUD - INFO PREVIEW (resolve URL) ---
-app.get('/api/download/soundcloud/info', async (req, res) => {
-    const trackUrl = extractSoundcloudUrl(req.query.url || '');
+app.get('/api/download/soundcloud/info', apiLimiter, async (req, res) => {
+    const trackUrl = extractSoundcloudUrl(sanitizeInput(req.query.url || ''));
     if (!trackUrl) return res.status(400).json({ error: "Link SoundCloud tidak valid." });
     try {
         const info = await soundcloud.getInfo(await resolveSoundcloudUrl(trackUrl));
@@ -226,9 +298,9 @@ app.get('/api/download/soundcloud/info', async (req, res) => {
 });
 
 // --- ROUTE 3: SOUNDCLOUD - DOWNLOAD MP3 (Streaming) ---
-app.get('/api/download/soundcloud', async (req, res) => {
-    const trackUrl = extractSoundcloudUrl(req.query.url || '');
-    if (!trackUrl) return res.status(400).json({ error: "Link SoundCloud kosong!" });
+app.get('/api/download/soundcloud', downloadLimiter, async (req, res) => {
+    const trackUrl = extractSoundcloudUrl(sanitizeInput(req.query.url || ''));
+    if (!trackUrl) return res.status(400).json({ error: "Link SoundCloud tidak boleh kosong." });
     try {
         const fullUrl = await resolveSoundcloudUrl(trackUrl);
         const info = await soundcloud.getInfo(fullUrl);
@@ -244,4 +316,4 @@ app.get('/api/download/soundcloud', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => console.log(`🚀 Server FACHRI DEV Ultimate v3.0 berjalan di port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server FACHRI DEV Ultimate v3.1.0 berjalan di port ${PORT}`));
