@@ -10,8 +10,6 @@
     <meta name="keywords" content="youtube downloader, tiktok downloader, soundcloud downloader, download mp3, download video">
     <meta name="author" content="FACHRI DEV">
     <meta name="robots" content="index, follow">
-
-    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://riihdyt.devs.surf/">
     <meta property="og:title" content="FD Downloader - YouTube, TikTok, SoundCloud">
@@ -19,15 +17,11 @@
     <meta property="og:image" content="https://riihdyt.devs.surf/logo.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-
-    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://riihdyt.devs.surf/">
     <meta name="twitter:title" content="FD Downloader - YouTube, TikTok, SoundCloud">
     <meta name="twitter:description" content="Download MP3 YouTube, Video TikTok, dan SoundCloud secara gratis.">
     <meta name="twitter:image" content="https://riihdyt.devs.surf/logo.png">
-
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="/logo.png">
     <link rel="apple-touch-icon" href="/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -44,6 +38,8 @@
             --input: rgba(255,255,255,0.06);
             --input-border: rgba(255,255,255,0.1);
             --radius: 14px;
+            --success: #22c55e;
+            --error: #f43f5e;
         }
         body.light {
             --bg: #f5f5f7;
@@ -78,13 +74,20 @@
             filter: blur(100px);
             pointer-events: none;
             z-index: 0;
+            animation: floatGlow 8s ease-in-out infinite alternate;
         }
         body::before { width: 350px; height: 350px; background: rgba(99,102,241,0.08); top: -100px; left: -80px; }
-        body::after { width: 300px; height: 300px; background: rgba(139,92,246,0.06); bottom: -100px; right: -80px; }
+        body::after { width: 300px; height: 300px; background: rgba(139,92,246,0.06); bottom: -100px; right: -80px; animation-delay: -4s; }
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 20px) scale(1.1); }
+        }
 
         .card {
             width: 100%;
             max-width: 420px;
+            max-height: 90dvh;
+            overflow-y: auto;
             background: var(--card);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
@@ -94,354 +97,206 @@
             position: relative;
             z-index: 1;
             animation: fadeIn .4s ease;
+            scrollbar-width: none;
         }
+        .card::-webkit-scrollbar { display: none; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
-        .top-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .brand-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            object-fit: cover;
-        }
-        .brand-text h1 {
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-        }
-        .brand-text span {
-            font-size: 10px;
-            color: var(--muted);
-        }
-        .theme-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            border: 1px solid var(--input-border);
-            background: var(--input);
-            color: var(--text);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 4px;
-            background: var(--input);
-            border: 1px solid var(--input-border);
-            padding: 3px;
-            border-radius: 10px;
-            margin-bottom: 14px;
-        }
-        .tab {
-            flex: 1;
-            padding: 8px 4px;
-            border: none;
-            border-radius: 8px;
-            background: transparent;
-            color: var(--muted);
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
+        .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand-icon { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; }
+        .brand-text h1 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+        .brand-text span { font-size: 10px; color: var(--muted); }
+        .top-actions { display: flex; gap: 6px; }
+        .theme-btn, .history-btn {
+            width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--input-border);
+            background: var(--input); color: var(--text); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 14px;
             transition: all .2s;
-            font-family: inherit;
         }
-        .tab.on {
-            background: var(--grad);
-            color: #fff;
-            box-shadow: 0 4px 12px var(--primary-glow);
-        }
+        .theme-btn:hover, .history-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .history-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-        .input-wrap {
-            position: relative;
-            margin-bottom: 10px;
+        .stats-bar {
+            display: flex; justify-content: center; margin-bottom: 12px; font-size: 11px; color: var(--muted);
+            background: var(--input); border: 1px solid var(--input-border); padding: 5px 12px; border-radius: 8px;
         }
+        .stats-bar strong { color: var(--primary); font-weight: 700; }
+
+        .tabs { display: flex; gap: 4px; background: var(--input); border: 1px solid var(--input-border); padding: 3px; border-radius: 10px; margin-bottom: 14px; }
+        .tab {
+            flex: 1; padding: 8px 4px; border: none; border-radius: 8px; background: transparent;
+            color: var(--muted); font-size: 11px; font-weight: 600; cursor: pointer; transition: all .2s; font-family: inherit;
+        }
+        .tab.on { background: var(--grad); color: #fff; box-shadow: 0 4px 12px var(--primary-glow); }
+
+        .input-wrap { position: relative; margin-bottom: 10px; }
         .input-wrap input {
-            width: 100%;
-            padding: 12px 70px 12px 14px;
-            border-radius: var(--radius);
-            border: 1px solid var(--input-border);
-            background: var(--input);
-            color: var(--text);
-            font-size: 13px;
-            outline: none;
-            font-family: inherit;
-            transition: border-color .2s, box-shadow .2s;
+            width: 100%; padding: 12px 70px 12px 14px; border-radius: var(--radius);
+            border: 1px solid var(--input-border); background: var(--input); color: var(--text);
+            font-size: 13px; outline: none; font-family: inherit; transition: border-color .2s, box-shadow .2s;
         }
-        .input-wrap input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-glow);
-        }
+        .input-wrap input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
         .input-wrap input::placeholder { color: var(--muted); opacity: .6; }
         .btn-paste {
-            position: absolute;
-            right: 6px;
-            top: 50%;
-            transform: translateY(-50%);
-            padding: 6px 10px;
-            border-radius: 8px;
-            border: 1px solid var(--input-border);
-            background: var(--input);
-            color: var(--muted);
-            font-size: 11px;
-            cursor: pointer;
-            font-family: inherit;
-            font-weight: 500;
+            position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+            padding: 6px 10px; border-radius: 8px; border: 1px solid var(--input-border);
+            background: var(--input); color: var(--muted); font-size: 11px; cursor: pointer;
+            font-family: inherit; font-weight: 500; transition: all .2s;
         }
         .btn-paste:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
 
         .btn-go {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: var(--radius);
-            background: var(--grad);
-            color: #fff;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            font-family: inherit;
-            transition: transform .15s, box-shadow .2s;
+            width: 100%; padding: 12px; border: none; border-radius: var(--radius);
+            background: var(--grad); color: #fff; font-size: 14px; font-weight: 700;
+            cursor: pointer; font-family: inherit; transition: transform .15s, box-shadow .2s;
             box-shadow: 0 6px 20px var(--primary-glow);
         }
         .btn-go:hover { transform: translateY(-1px); box-shadow: 0 10px 28px var(--primary-glow); }
         .btn-go:active { transform: scale(.97); }
         .btn-go:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
-        .progress {
-            height: 4px;
-            background: var(--input);
-            border-radius: 4px;
-            margin-top: 10px;
-            overflow: hidden;
-            display: none;
-        }
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: var(--grad);
-            border-radius: 4px;
-            transition: width .3s;
-        }
-        .progress-text {
-            font-size: 10px;
-            color: var(--primary);
-            margin-top: 6px;
-            display: none;
-            font-weight: 500;
-            text-align: center;
-        }
+        .progress { height: 4px; background: var(--input); border-radius: 4px; margin-top: 10px; overflow: hidden; display: none; }
+        .progress-bar { height: 100%; width: 0%; background: var(--grad); border-radius: 4px; transition: width .3s; }
+        .progress-text { font-size: 10px; color: var(--primary); margin-top: 6px; display: none; font-weight: 500; text-align: center; }
 
         .error {
-            font-size: 11px;
-            color: #f43f5e;
-            background: rgba(244,63,94,0.08);
-            border: 1px solid rgba(244,63,94,0.15);
-            padding: 8px 12px;
-            border-radius: 10px;
-            margin-top: 8px;
-            display: none;
-            font-weight: 500;
+            font-size: 11px; color: var(--error); background: rgba(244,63,94,0.08);
+            border: 1px solid rgba(244,63,94,0.15); padding: 8px 12px; border-radius: 10px;
+            margin-top: 8px; display: none; font-weight: 500;
         }
 
         .preview {
-            display: none;
-            margin-top: 10px;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--input-border);
-            position: relative;
-            animation: fadeIn .3s ease;
+            display: none; margin-top: 10px; border-radius: 12px; overflow: hidden;
+            border: 1px solid var(--input-border); position: relative; animation: fadeIn .3s ease;
         }
-        .preview img {
-            width: 100%;
-            aspect-ratio: 16/9;
-            object-fit: cover;
-            display: block;
-            background: var(--input);
-        }
+        .preview img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: var(--input); }
         .preview .badge {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: rgba(0,0,0,.6);
-            backdrop-filter: blur(6px);
-            color: #fff;
-            font-size: 10px;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 99px;
+            position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,.6);
+            backdrop-filter: blur(6px); color: #fff; font-size: 10px; font-weight: 600;
+            padding: 4px 10px; border-radius: 99px;
         }
         .preview .badge.ok { background: var(--grad); }
-        .preview .hint {
-            font-size: 10px;
-            color: var(--muted);
-            padding: 6px 10px;
-        }
+        .preview .hint { font-size: 10px; color: var(--muted); padding: 6px 10px; }
 
         .result {
-            display: none;
-            margin-top: 10px;
-            padding: 12px;
-            background: var(--input);
-            border: 1px solid var(--input-border);
-            border-radius: 12px;
-            animation: fadeIn .3s ease;
+            display: none; margin-top: 10px; padding: 12px; background: var(--input);
+            border: 1px solid var(--input-border); border-radius: 12px; animation: fadeIn .3s ease;
         }
-        .result-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .result-row img {
-            width: 56px;
-            height: 56px;
-            border-radius: 10px;
-            object-fit: cover;
-            background: var(--input);
-            border: 1px solid var(--input-border);
-        }
+        .result-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+        .result-row img { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; background: var(--input); border: 1px solid var(--input-border); }
         .result-row .info { flex: 1; min-width: 0; }
         .result-row .label { font-size: 9px; color: var(--muted); letter-spacing: .04em; margin-bottom: 2px; }
-        .result-row .title {
-            font-size: 12px;
-            font-weight: 600;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+        .result-row .title { font-size: 12px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .result-actions { display: flex; gap: 8px; }
+        .btn-save, .btn-copy {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 10px; background: var(--grad); color: #fff; text-decoration: none;
+            border-radius: 10px; font-size: 12px; font-weight: 700; transition: transform .15s;
+            font-family: inherit; border: none; cursor: pointer;
         }
-        .btn-save {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            width: 100%;
-            padding: 10px;
-            background: var(--grad);
-            color: #fff;
-            text-decoration: none;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 700;
-            transition: transform .15s;
-            font-family: inherit;
-        }
-        .btn-save:hover { transform: translateY(-1px); }
+        .btn-copy { background: var(--input); border: 1px solid var(--input-border); color: var(--text); }
+        .btn-copy:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-save:hover, .btn-copy:hover { transform: translateY(-1px); }
+        .btn-copy.copied { background: var(--success); color: #fff; border-color: var(--success); }
 
-        .sc-list {
-            display: none;
-            flex-direction: column;
-            gap: 6px;
-            margin-top: 10px;
-            max-height: 180px;
-            overflow-y: auto;
-        }
+        .sc-list { display: none; flex-direction: column; gap: 6px; margin-top: 10px; max-height: 180px; overflow-y: auto; }
         .sc-item {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            padding: 8px;
-            background: var(--input);
-            border: 1px solid var(--input-border);
-            border-radius: 10px;
-            animation: fadeIn .3s ease;
+            display: flex; gap: 8px; align-items: center; padding: 8px; background: var(--input);
+            border: 1px solid var(--input-border); border-radius: 10px; animation: fadeIn .3s ease;
         }
         .sc-item img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: var(--input); }
         .sc-item .sc-info { flex: 1; min-width: 0; }
         .sc-item .sc-title { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sc-item .sc-sub { font-size: 9px; color: var(--muted); margin-top: 1px; }
         .sc-item button {
-            background: var(--grad);
-            border: none;
-            color: #fff;
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            flex-shrink: 0;
-            font-family: inherit;
+            background: var(--grad); border: none; color: #fff; padding: 6px 10px; border-radius: 8px;
+            font-size: 10px; font-weight: 700; cursor: pointer; flex-shrink: 0; font-family: inherit;
         }
 
-        .footer {
-            text-align: center;
-            margin-top: 14px;
-            font-size: 10px;
-            color: var(--muted);
-            opacity: .5;
+        .history-panel {
+            display: none; margin-top: 10px; animation: fadeIn .3s ease;
         }
-        .stats-bar {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 12px;
-            font-size: 11px;
-            color: var(--muted);
-            background: var(--input);
-            border: 1px solid var(--input-border);
-            padding: 5px 12px;
-            border-radius: 8px;
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .history-header span { font-size: 11px; font-weight: 600; color: var(--muted); }
+        .history-clear {
+            font-size: 10px; color: var(--error); background: none; border: none; cursor: pointer;
+            font-family: inherit; font-weight: 600; opacity: .7; transition: opacity .2s;
         }
-        .stats-bar strong {
-            color: var(--primary);
-            font-weight: 700;
+        .history-clear:hover { opacity: 1; }
+        .history-list { display: flex; flex-direction: column; gap: 4px; max-height: 160px; overflow-y: auto; }
+        .history-item {
+            display: flex; gap: 8px; align-items: center; padding: 6px 8px; background: var(--input);
+            border: 1px solid var(--input-border); border-radius: 8px; font-size: 11px; cursor: pointer;
+            transition: all .2s; animation: fadeIn .2s ease;
         }
+        .history-item:hover { border-color: var(--primary); background: rgba(99,102,241,0.05); }
+        .history-item .h-icon { font-size: 14px; flex-shrink: 0; }
+        .history-item .h-info { flex: 1; min-width: 0; }
+        .history-item .h-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .history-item .h-meta { font-size: 9px; color: var(--muted); margin-top: 1px; }
+        .history-empty { font-size: 11px; color: var(--muted); text-align: center; padding: 16px; opacity: .6; }
+
+        .footer { text-align: center; margin-top: 14px; font-size: 10px; color: var(--muted); opacity: .5; }
 
         #installPrompt {
-            position: fixed;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--card);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--card-border);
-            padding: 10px 14px;
-            border-radius: 12px;
-            display: none;
-            align-items: center;
-            gap: 10px;
-            z-index: 100;
-            font-size: 12px;
-            font-weight: 600;
-            animation: fadeIn .3s ease;
+            position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
+            background: var(--card); backdrop-filter: blur(16px); border: 1px solid var(--card-border);
+            padding: 10px 14px; border-radius: 12px; display: none; align-items: center; gap: 10px;
+            z-index: 100; font-size: 12px; font-weight: 600; animation: fadeIn .3s ease;
         }
         #installPrompt button {
-            background: var(--grad);
-            color: #fff;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 11px;
-            font-family: inherit;
+            background: var(--grad); color: #fff; border: none; padding: 6px 12px;
+            border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 11px; font-family: inherit;
         }
         #installPrompt .close {
-            background: transparent;
-            color: var(--muted);
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            padding: 0 4px;
+            background: transparent; color: var(--muted); border: none; cursor: pointer;
+            font-size: 14px; padding: 0 4px;
         }
+
+        .toast-container {
+            position: fixed; top: 16px; right: 16px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+        }
+        .toast {
+            background: var(--card); backdrop-filter: blur(16px); border: 1px solid var(--card-border);
+            padding: 12px 16px; border-radius: 12px; font-size: 12px; font-weight: 600;
+            display: flex; align-items: center; gap: 10px; min-width: 240px; max-width: 340px;
+            pointer-events: auto; animation: toastIn .3s ease; box-shadow: 0 8px 32px rgba(0,0,0,.2);
+        }
+        .toast.hide { animation: toastOut .3s ease forwards; }
+        .toast-icon { font-size: 16px; flex-shrink: 0; }
+        .toast-msg { flex: 1; color: var(--text); }
+        .toast.success { border-color: rgba(34,197,94,0.3); }
+        .toast.success .toast-icon { color: var(--success); }
+        .toast.error { border-color: rgba(244,63,94,0.3); }
+        .toast.error .toast-icon { color: var(--error); }
+        .toast.info { border-color: rgba(99,102,241,0.3); }
+        .toast.info .toast-icon { color: var(--primary); }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
+        @keyframes toastOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(40px); } }
+
+        .skeleton {
+            background: linear-gradient(90deg, var(--input) 25%, rgba(255,255,255,0.08) 50%, var(--input) 75%);
+            background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px;
+        }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .skeleton-thumb { width: 100%; aspect-ratio: 16/9; border-radius: 12px; margin-top: 10px; }
+        .skeleton-text { height: 12px; margin-top: 8px; width: 70%; }
+        .skeleton-btn { height: 40px; margin-top: 10px; border-radius: var(--radius); }
+
+        .offline-bar {
+            position: fixed; top: 0; left: 0; right: 0; background: var(--error); color: #fff;
+            text-align: center; padding: 6px; font-size: 11px; font-weight: 600; z-index: 10000;
+            transform: translateY(-100%); transition: transform .3s;
+        }
+        .offline-bar.show { transform: translateY(0); }
     </style>
 </head>
 <body>
+
+<div class="offline-bar" id="offlineBar">Koneksi terputus. Periksa jaringan kamu.</div>
+<div class="toast-container" id="toastContainer"></div>
 
 <div id="installPrompt">
     <span>Install FD App?</span>
@@ -450,7 +305,7 @@
 </div>
 
 <div class="card">
-        <div class="top-bar">
+    <div class="top-bar">
         <div class="brand">
             <img src="/logo.png" alt="FD Logo" class="brand-icon">
             <div class="brand-text">
@@ -458,7 +313,10 @@
                 <span>YouTube &middot; TikTok &middot; SoundCloud</span>
             </div>
         </div>
-        <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+        <div class="top-actions">
+            <button class="history-btn" id="historyBtn" onclick="toggleHistory()" title="Riwayat">📋</button>
+            <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+        </div>
     </div>
 
     <div class="stats-bar">
@@ -482,6 +340,8 @@
     <div class="progress-text" id="progressText"></div>
     <div class="error" id="errorMsg"></div>
 
+    <div id="skeletonArea"></div>
+
     <div class="preview" id="previewArea">
         <img src="" alt="" id="previewThumb">
         <span class="badge" id="previewBadge"></span>
@@ -496,17 +356,41 @@
                 <div class="title" id="resTitle">-</div>
             </div>
         </div>
-        <a href="#" class="btn-save" id="resLink" target="_blank">Download File</a>
+        <div class="result-actions">
+            <a href="#" class="btn-save" id="resLink" target="_blank">Download</a>
+            <button class="btn-copy" id="copyBtn" onclick="copyLink()">Copy Link</button>
+        </div>
     </div>
 
     <div class="sc-list" id="scResults"></div>
 
-    <div class="footer">FACHRI DEV &middot; &copy; <span id="year"></span> &middot; v3.1.0</div>
+    <div class="history-panel" id="historyPanel">
+        <div class="history-header">
+            <span>Riwayat Download</span>
+            <button class="history-clear" onclick="clearHistory()">Hapus Semua</button>
+        </div>
+        <div class="history-list" id="historyList"></div>
+    </div>
+
+    <div class="footer">FACHRI DEV &middot; &copy; <span id="year"></span> &middot; v3.2.0</div>
 </div>
 
 <script>
 let currentMode = 'youtube';
+const HISTORY_KEY = 'fd_history';
 
+// === Toast System ===
+function showToast(msg, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const icons = { success: '✓', error: '✕', info: 'ℹ' };
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span class="toast-icon">${icons[type]}</span><span class="toast-msg">${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.classList.add('hide'); setTimeout(() => toast.remove(), 300); }, 3000);
+}
+
+// === Theme ===
 function toggleTheme() {
     document.body.classList.toggle('light');
     const isLight = document.body.classList.contains('light');
@@ -518,11 +402,30 @@ if (localStorage.getItem('fd_theme') === 'light') {
     document.getElementById('themeBtn').innerText = '☀️';
 }
 
+// === Skeleton ===
+function showSkeleton() {
+    document.getElementById('skeletonArea').innerHTML = `
+        <div class="skeleton skeleton-thumb"></div>
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-btn"></div>`;
+}
+function hideSkeleton() { document.getElementById('skeletonArea').innerHTML = ''; }
+
+// === Offline Detection ===
+window.addEventListener('online', () => { document.getElementById('offlineBar').classList.remove('show'); showToast('Koneksi tersambung kembali', 'success'); });
+window.addEventListener('offline', () => { document.getElementById('offlineBar').classList.add('show'); showToast('Koneksi terputus', 'error'); });
+if (!navigator.onLine) document.getElementById('offlineBar').classList.add('show');
+
+// === Keyboard Shortcuts ===
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.activeElement === document.getElementById('urlInput')) processDownload();
+});
+
+// === YouTube ===
 function extractYouTubeId(url) {
     const m = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/) || url.match(/^([a-zA-Z0-9_-]{11})$/);
     return m ? m[1] : null;
 }
-
 function showYouTubePreview(url) {
     const id = extractYouTubeId(url);
     const area = document.getElementById('previewArea');
@@ -534,9 +437,9 @@ function showYouTubePreview(url) {
     document.getElementById('previewHint').textContent = 'Thumbnail ditemukan';
     area.style.display = 'block';
 }
-
 function hidePreview() { document.getElementById('previewArea').style.display = 'none'; }
 
+// === SoundCloud Preview ===
 async function showSoundcloudPreview(url) {
     const area = document.getElementById('previewArea');
     const badge = document.getElementById('previewBadge');
@@ -585,7 +488,10 @@ function switchTab(mode) {
     document.getElementById('resultArea').style.display = 'none';
     document.getElementById('scResults').style.display = 'none';
     document.getElementById('errorMsg').style.display = 'none';
+    document.getElementById('historyPanel').style.display = 'none';
+    document.getElementById('historyBtn').classList.remove('active');
     hidePreview();
+    hideSkeleton();
     const inp = document.getElementById('urlInput');
     inp.placeholder = mode === 'soundcloud' ? 'Ketik judul lagu atau paste link...' : 'Paste link YouTube / TikTok...';
 }
@@ -595,9 +501,10 @@ async function pasteClipboard() {
         const t = await navigator.clipboard.readText();
         document.getElementById('urlInput').value = t;
         autoDetect(t);
-    } catch (e) { alert('Gagal akses clipboard. Paste manual (Ctrl+V).'); }
+    } catch (e) { showToast('Gagal akses clipboard. Paste manual (Ctrl+V).', 'error'); }
 }
 
+// === Progress ===
 function simulateProgress() {
     const box = document.getElementById('progressBox');
     const bar = document.getElementById('progressBar');
@@ -617,7 +524,6 @@ function simulateProgress() {
         if (w > 60 && mi === 1) { txt.textContent = msgs[2]; mi++; }
     }, 300);
 }
-
 function finishProgress(ok) {
     clearInterval(window._prog);
     const bar = document.getElementById('progressBar');
@@ -634,6 +540,68 @@ function showError(msg) {
     e.style.display = 'block';
 }
 
+// === Copy Link ===
+function copyLink() {
+    const link = document.getElementById('resLink').href;
+    const btn = document.getElementById('copyBtn');
+    navigator.clipboard.writeText(link).then(() => {
+        btn.textContent = 'Tersalin!';
+        btn.classList.add('copied');
+        showToast('Link berhasil disalin', 'success');
+        setTimeout(() => { btn.textContent = 'Copy Link'; btn.classList.remove('copied'); }, 2000);
+    }).catch(() => showToast('Gagal menyalin link', 'error'));
+}
+
+// === History ===
+function getHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch { return []; }
+}
+function saveHistory(item) {
+    let h = getHistory();
+    h = h.filter(i => i.url !== item.url);
+    h.unshift(item);
+    if (h.length > 20) h = h.slice(0, 20);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+    renderHistory();
+}
+function clearHistory() {
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+    showToast('Riwayat dihapus', 'info');
+}
+function renderHistory() {
+    const list = document.getElementById('historyList');
+    const h = getHistory();
+    if (!h.length) { list.innerHTML = '<div class="history-empty">Belum ada riwayat</div>'; return; }
+    list.innerHTML = h.map(i => {
+        const icon = i.mode === 'youtube' ? '🎵' : i.mode === 'tiktok' ? '🎬' : '🎧';
+        const time = new Date(i.time).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        return `<div class="history-item" onclick="reDownload('${i.mode}','${encodeURIComponent(i.url)}')">
+            <span class="h-icon">${icon}</span>
+            <div class="h-info">
+                <div class="h-title">${i.title}</div>
+                <div class="h-meta">${i.mode.toUpperCase()} · ${time}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+function reDownload(mode, encodedUrl) {
+    const url = decodeURIComponent(encodedUrl);
+    document.getElementById('urlInput').value = url;
+    switchTab(mode);
+    autoDetect(url);
+    processDownload();
+}
+function toggleHistory() {
+    const panel = document.getElementById('historyPanel');
+    const btn = document.getElementById('historyBtn');
+    const isVisible = panel.style.display === 'block';
+    panel.style.display = isVisible ? 'none' : 'block';
+    btn.classList.toggle('active', !isVisible);
+    if (!isVisible) renderHistory();
+}
+
+// === Main Download ===
 async function processDownload() {
     const url = document.getElementById('urlInput').value.trim();
     const btn = document.getElementById('actionBtn');
@@ -644,6 +612,7 @@ async function processDownload() {
     btn.textContent = 'Memproses...';
     err.style.display = 'none';
     res.style.display = 'none';
+    hidePreview();
     simulateProgress();
     const ctrl = new AbortController();
     const tid = setTimeout(() => ctrl.abort(), 30000);
@@ -657,10 +626,13 @@ async function processDownload() {
                 document.getElementById('resLink').href = link;
                 res.style.display = 'block';
                 finishProgress(true);
+                saveHistory({ mode: 'soundcloud', title: 'SoundCloud MP3', url, time: Date.now() });
                 window.location.href = link;
             } else {
+                showSkeleton();
                 const r = await fetch(`/api/download/soundcloud/search?q=${encodeURIComponent(url)}`, { signal: ctrl.signal });
                 const d = await r.json();
+                hideSkeleton();
                 if (!r.ok) throw new Error(d.error || 'Server error');
                 renderSc(d.tracks);
                 if (!d.tracks.length) throw new Error('Tidak ada hasil.');
@@ -678,22 +650,30 @@ async function processDownload() {
                 document.getElementById('resLink').href = sl;
                 res.style.display = 'block';
                 finishProgress(true);
+                saveHistory({ mode: 'tiktok', title: d.title, url, time: Date.now() });
             } else {
                 window.location.href = `${ep}?url=${encodeURIComponent(url)}`;
                 finishProgress(true);
+                saveHistory({ mode: 'tiktok', title: 'TikTok Video', url, time: Date.now() });
             }
         } else {
+            showSkeleton();
             const r = await fetch(`${ep}?url=${encodeURIComponent(url)}`, { signal: ctrl.signal });
             const d = await r.json();
+            hideSkeleton();
             if (!r.ok) throw new Error(d.error || 'Server error');
             document.getElementById('resTitle').textContent = d.title;
             document.getElementById('resThumb').src = d.thumb || '';
             document.getElementById('resLink').href = d.link;
             res.style.display = 'block';
             finishProgress(true);
+            saveHistory({ mode: 'youtube', title: d.title, url, time: Date.now() });
         }
     } catch (e) {
-        showError(e.name === 'AbortError' ? 'Timeout. Coba lagi.' : e.message);
+        hideSkeleton();
+        const msg = e.name === 'AbortError' ? 'Timeout. Coba lagi.' : e.message;
+        showError(msg);
+        showToast(msg, 'error');
         finishProgress(false);
     } finally {
         clearTimeout(tid);
@@ -715,29 +695,30 @@ function renderSc(tracks) {
                 <div class="sc-title">${t.title}</div>
                 <div class="sc-sub">${dur ? dur + ' · ' : ''}SoundCloud</div>
             </div>
-            <button onclick="dlSc('${encodeURIComponent(t.permalink)}')">MP3</button>
+            <button onclick="dlSc('${encodeURIComponent(t.permalink)}','${t.title.replace(/'/g, "\\'")}')">MP3</button>
         </div>`;
     });
     c.style.display = 'flex';
 }
 
-function dlSc(p) {
+function dlSc(p, title) {
     const link = '/api/download/soundcloud?url=' + p;
+    saveHistory({ mode: 'soundcloud', title: title || 'SoundCloud', url: decodeURIComponent(p), time: Date.now() });
     window.location.href = link;
 }
 
+// === PWA Install ===
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; document.getElementById('installPrompt').style.display = 'flex'; });
 document.getElementById('btnInstall').addEventListener('click', async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') document.getElementById('installPrompt').style.display = 'none';
+    if (outcome === 'accepted') { document.getElementById('installPrompt').style.display = 'none'; showToast('App berhasil diinstall!', 'success'); }
     deferredPrompt = null;
 });
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
-
 document.getElementById('year').textContent = new Date().getFullYear();
 
 async function fetchStats() {
