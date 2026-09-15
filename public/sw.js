@@ -1,11 +1,11 @@
-const CACHE_NAME = 'fachri-dev-v3.1.0';
-const CACHE_VERSION = '3.1.0';
+const CACHE_NAME = 'fachri-dev-v3.1.1';
+const CACHE_VERSION = '3.1.1';
 
 const PRECACHE_URLS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icon.svg'
+  '/logo.png'
 ];
 
 // Offline fallback page
